@@ -7,7 +7,6 @@ import android.graphics.drawable.GradientDrawable
 import android.view.*
 import android.widget.*
 import android.content.Context
-import android.content.res.ColorStateList
 import kotlin.math.abs
 import kotlin.math.max
 import kotlin.math.min
@@ -15,116 +14,125 @@ import kotlin.random.Random
 
 class MainActivity : Activity() {
 
+    private val navy = Color.rgb(24, 48, 78)
+    private val green = Color.rgb(42, 181, 132)
+    private val bg = Color.rgb(247, 248, 250)
+    private val dark = Color.rgb(42, 48, 56)
     private lateinit var root: FrameLayout
-
-    private val navy = Color.rgb(25, 49, 79)
-    private val background = Color.rgb(247, 248, 250)
-    private val textDark = Color.rgb(30, 39, 50)
-    private val gray = Color.rgb(120, 128, 138)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        window.statusBarColor = background
-        window.navigationBarColor = background
-        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+        window.statusBarColor = bg
+        window.navigationBarColor = bg
+        window.decorView.systemUiVisibility =
+            View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
 
         showHome()
     }
 
-    // ---------------------------------------------------------
+    private fun dp(v: Int): Int =
+        (v * resources.displayMetrics.density).toInt()
+
+    // =========================================================
     // HOME
-    // ---------------------------------------------------------
+    // =========================================================
 
     private fun showHome() {
 
         root = FrameLayout(this)
-        root.setBackgroundColor(background)
+        root.setBackgroundColor(bg)
 
-        val content = LinearLayout(this)
-        content.orientation = LinearLayout.VERTICAL
-        content.gravity = Gravity.CENTER_HORIZONTAL
+        val box = LinearLayout(this)
+        box.orientation = LinearLayout.VERTICAL
+        box.gravity = Gravity.CENTER_HORIZONTAL
 
-        val contentParams = FrameLayout.LayoutParams(
+        val rp = FrameLayout.LayoutParams(
             FrameLayout.LayoutParams.MATCH_PARENT,
             FrameLayout.LayoutParams.MATCH_PARENT
         )
-        contentParams.setMargins(dp(14), dp(22), dp(14), dp(8))
-        root.addView(content, contentParams)
+        rp.setMargins(dp(14), dp(18), dp(14), dp(8))
+        root.addView(box, rp)
 
-        // لوگوی اختصاصی هندسی
+        // LOGO
         val logo = ArcadeLogoView(this)
 
-        val logoParams = LinearLayout.LayoutParams(dp(105), dp(105))
-        logoParams.gravity = Gravity.CENTER_HORIZONTAL
-        content.addView(logo, logoParams)
+        val lpLogo = LinearLayout.LayoutParams(
+            dp(104),
+            dp(104)
+        )
+        lpLogo.gravity = Gravity.CENTER_HORIZONTAL
+        box.addView(logo, lpLogo)
 
-        // انیمیشن ورود لوگو
         logo.alpha = 0f
-        logo.scaleX = 0.65f
-        logo.scaleY = 0.65f
+        logo.scaleX = .55f
+        logo.scaleY = .55f
+        logo.rotation = -12f
 
         logo.animate()
             .alpha(1f)
             .scaleX(1f)
             .scaleY(1f)
+            .rotation(0f)
             .setDuration(850)
             .start()
 
-        // نام اختصاصی
-        val title = ArcadeWordmarkView(this)
+        // WORDMARK
+        val wordmark = ArcadeWordmarkView(this)
 
-        val titleParams = LinearLayout.LayoutParams(
+        val lpWord = LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT,
-            dp(58)
+            dp(54)
         )
-        titleParams.topMargin = dp(2)
-        content.addView(title, titleParams)
+        lpWord.topMargin = dp(2)
+        box.addView(wordmark, lpWord)
 
-        title.alpha = 0f
-        title.translationY = dp(15).toFloat()
+        wordmark.alpha = 0f
+        wordmark.translationY = dp(16).toFloat()
 
-        title.animate()
+        wordmark.animate()
             .alpha(1f)
             .translationY(0f)
-            .setDuration(700)
-            .setStartDelay(300)
+            .setDuration(650)
+            .setStartDelay(250)
             .start()
 
-        // زیرعنوان
-        val subtitle = TextView(this)
-        subtitle.text = "سه بازی مینیمال، همیشه همراهت"
-        subtitle.textSize = 17f
-        subtitle.setTextColor(Color.rgb(70, 75, 82))
-        subtitle.gravity = Gravity.CENTER
-        subtitle.typeface = Typeface.create("sans", Typeface.NORMAL)
+        // SUBTITLE
+        val sub = TextView(this)
+        sub.text = "سه بازی مینیمال، همیشه همراهت"
+        sub.textSize = 16f
+        sub.setTextColor(Color.rgb(80, 85, 92))
+        sub.gravity = Gravity.CENTER
+        sub.typeface = Typeface.DEFAULT
 
-        val subtitleParams = LinearLayout.LayoutParams(
-            LinearLayout.LayoutParams.MATCH_PARENT,
-            dp(40)
-        )
-        content.addView(subtitle, subtitleParams)
-
-        subtitle.alpha = 0f
-        subtitle.animate()
-            .alpha(1f)
-            .setDuration(600)
-            .setStartDelay(500)
-            .start()
-
-        // فاصله
-        val spacer = Space(this)
-        content.addView(
-            spacer,
+        box.addView(
+            sub,
             LinearLayout.LayoutParams(
-                1,
-                dp(12)
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                dp(38)
             )
         )
 
-        // دکمه‌ها
-        addGameButton(
-            content,
+        sub.alpha = 0f
+
+        sub.animate()
+            .alpha(1f)
+            .setDuration(600)
+            .setStartDelay(450)
+            .start()
+
+        val gap = Space(this)
+
+        box.addView(
+            gap,
+            LinearLayout.LayoutParams(
+                1,
+                dp(14)
+            )
+        )
+
+        addButton(
+            box,
             "SNAKE",
             "مار",
             "●",
@@ -133,8 +141,8 @@ class MainActivity : Activity() {
             showSnake()
         }
 
-        addGameButton(
-            content,
+        addButton(
+            box,
             "BREAKOUT",
             "آجرشکن",
             "■",
@@ -143,8 +151,8 @@ class MainActivity : Activity() {
             showBreakout()
         }
 
-        addGameButton(
-            content,
+        addButton(
+            box,
             "FLAPPY",
             "پرواز",
             "◆",
@@ -153,8 +161,8 @@ class MainActivity : Activity() {
             showFlappy()
         }
 
-        addGameButton(
-            content,
+        addButton(
+            box,
             "TIC-TAC-TOE",
             "دوز",
             "×",
@@ -163,55 +171,50 @@ class MainActivity : Activity() {
             showTicTacToe()
         }
 
-        // فضای خالی
-        val bottomSpace = Space(this)
+        val bottom = Space(this)
 
-        val bottomParams = LinearLayout.LayoutParams(
+        val bp = LinearLayout.LayoutParams(
             1,
             0
         )
-        bottomParams.weight = 1f
-        content.addView(bottomSpace, bottomParams)
+        bp.weight = 1f
+        box.addView(bottom, bp)
 
         val footer = TextView(this)
         footer.text = "✓  رکوردها روی همین دستگاه ذخیره می‌شوند"
-        footer.textSize = 16f
-        footer.setTextColor(Color.rgb(145, 148, 153))
+        footer.textSize = 15f
+        footer.setTextColor(Color.rgb(145, 149, 154))
         footer.gravity = Gravity.CENTER
-        footer.typeface = Typeface.DEFAULT
 
-        content.addView(
+        box.addView(
             footer,
             LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
-                dp(45)
+                dp(42)
             )
         )
 
         setContentView(root)
     }
 
-    private fun addGameButton(
+    private fun addButton(
         parent: LinearLayout,
         title: String,
-        persian: String,
+        subtitle: String,
         symbol: String,
         index: Int,
-        action: () -> Unit
+        click: () -> Unit
     ) {
 
         val button = LinearLayout(this)
         button.orientation = LinearLayout.HORIZONTAL
         button.gravity = Gravity.CENTER_VERTICAL
-        button.setPadding(dp(18), 0, dp(18), 0)
+        button.setPadding(dp(14), 0, dp(12), 0)
 
-        val bg = GradientDrawable()
-        bg.setColor(navy)
-        bg.cornerRadius = dp(19).toFloat()
-        button.background = bg
-
-        button.isClickable = true
-        button.isFocusable = true
+        val drawable = GradientDrawable()
+        drawable.setColor(navy)
+        drawable.cornerRadius = dp(18).toFloat()
+        button.background = drawable
 
         val icon = TextView(this)
         icon.text = symbol
@@ -222,49 +225,46 @@ class MainActivity : Activity() {
         button.addView(
             icon,
             LinearLayout.LayoutParams(
-                dp(35),
+                dp(38),
                 LinearLayout.LayoutParams.MATCH_PARENT
             )
         )
 
-        val textContainer = LinearLayout(this)
-        textContainer.orientation = LinearLayout.VERTICAL
-        textContainer.gravity = Gravity.CENTER
+        val texts = LinearLayout(this)
+        texts.orientation = LinearLayout.VERTICAL
+        texts.gravity = Gravity.CENTER
 
-        val mainText = TextView(this)
-        mainText.text = title
-        mainText.textSize = 18f
-        mainText.setTextColor(Color.WHITE)
-        mainText.typeface = Typeface.create(
-            Typeface.DEFAULT,
-            Typeface.BOLD
-        )
-        mainText.gravity = Gravity.CENTER
+        val t1 = TextView(this)
+        t1.text = title
+        t1.textSize = 17f
+        t1.setTextColor(Color.WHITE)
+        t1.typeface = Typeface.DEFAULT_BOLD
+        t1.gravity = Gravity.CENTER
 
-        val subText = TextView(this)
-        subText.text = persian
-        subText.textSize = 11f
-        subText.setTextColor(Color.rgb(205, 215, 225))
-        subText.gravity = Gravity.CENTER
+        val t2 = TextView(this)
+        t2.text = subtitle
+        t2.textSize = 11f
+        t2.setTextColor(Color.rgb(205, 216, 228))
+        t2.gravity = Gravity.CENTER
 
-        textContainer.addView(
-            mainText,
+        texts.addView(
+            t1,
             LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 dp(25)
             )
         )
 
-        textContainer.addView(
-            subText,
+        texts.addView(
+            t2,
             LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
-                dp(20)
+                dp(18)
             )
         )
 
         button.addView(
-            textContainer,
+            texts,
             LinearLayout.LayoutParams(
                 0,
                 LinearLayout.LayoutParams.MATCH_PARENT,
@@ -274,7 +274,7 @@ class MainActivity : Activity() {
 
         val arrow = TextView(this)
         arrow.text = "›"
-        arrow.textSize = 30f
+        arrow.textSize = 29f
         arrow.setTextColor(Color.WHITE)
         arrow.gravity = Gravity.CENTER
 
@@ -286,14 +286,15 @@ class MainActivity : Activity() {
             )
         )
 
-        val params = LinearLayout.LayoutParams(
+        val p = LinearLayout.LayoutParams(
             LinearLayout.LayoutParams.MATCH_PARENT,
-            dp(58)
+            dp(57)
         )
 
-        params.topMargin = if (index == 0) dp(5) else dp(10)
+        p.topMargin =
+            if (index == 0) dp(4) else dp(9)
 
-        parent.addView(button, params)
+        parent.addView(button, p)
 
         button.alpha = 0f
         button.translationY = dp(20).toFloat()
@@ -302,7 +303,9 @@ class MainActivity : Activity() {
             .alpha(1f)
             .translationY(0f)
             .setDuration(450)
-            .setStartDelay((650 + index * 100).toLong())
+            .setStartDelay(
+                (650 + index * 90).toLong()
+            )
             .start()
 
         button.setOnTouchListener { v, event ->
@@ -311,9 +314,9 @@ class MainActivity : Activity() {
 
                 MotionEvent.ACTION_DOWN -> {
                     v.animate()
-                        .scaleX(0.97f)
-                        .scaleY(0.97f)
-                        .setDuration(80)
+                        .scaleX(.97f)
+                        .scaleY(.97f)
+                        .setDuration(70)
                         .start()
                 }
 
@@ -340,116 +343,105 @@ class MainActivity : Activity() {
         }
 
         button.setOnClickListener {
-            action()
+            click()
         }
     }
 
-    // ---------------------------------------------------------
-    // GAME SCREEN
-    // ---------------------------------------------------------
+    // =========================================================
+    // GAME CONTAINER
+    // =========================================================
 
     private fun gameContainer(
         title: String,
-        gameView: View
+        game: View
     ): FrameLayout {
 
         val frame = FrameLayout(this)
-        frame.setBackgroundColor(background)
+        frame.setBackgroundColor(bg)
 
-        val top = LinearLayout(this)
-        top.orientation = LinearLayout.HORIZONTAL
-        top.gravity = Gravity.CENTER_VERTICAL
+        val header = LinearLayout(this)
+        header.orientation = LinearLayout.HORIZONTAL
+        header.gravity = Gravity.CENTER_VERTICAL
 
         val back = TextView(this)
         back.text = "‹"
         back.textSize = 42f
         back.setTextColor(navy)
         back.gravity = Gravity.CENTER
-        back.setPadding(0, 0, 0, dp(4))
-
         back.setOnClickListener {
             showHome()
         }
 
-        top.addView(
+        header.addView(
             back,
             LinearLayout.LayoutParams(
-                dp(58),
-                dp(60)
+                dp(60),
+                dp(62)
             )
         )
 
         val titleView = TextView(this)
         titleView.text = title
-        titleView.textSize = 25f
+        titleView.textSize = 24f
         titleView.setTextColor(navy)
-        titleView.typeface = Typeface.create(
-            Typeface.DEFAULT,
-            Typeface.BOLD
-        )
+        titleView.typeface = Typeface.DEFAULT_BOLD
         titleView.gravity = Gravity.CENTER
 
-        top.addView(
+        header.addView(
             titleView,
             LinearLayout.LayoutParams(
                 0,
-                dp(60),
+                dp(62),
                 1f
             )
         )
 
-        val empty = Space(this)
-
-        top.addView(
-            empty,
+        header.addView(
+            Space(this),
             LinearLayout.LayoutParams(
-                dp(58),
-                dp(60)
+                dp(60),
+                dp(62)
             )
         )
 
-        val topParams = FrameLayout.LayoutParams(
-            FrameLayout.LayoutParams.MATCH_PARENT,
-            dp(65)
+        frame.addView(
+            header,
+            FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                dp(62)
+            )
         )
 
-        frame.addView(top, topParams)
-
-        val gameParams = FrameLayout.LayoutParams(
+        val gp = FrameLayout.LayoutParams(
             FrameLayout.LayoutParams.MATCH_PARENT,
             FrameLayout.LayoutParams.MATCH_PARENT
         )
 
-        gameParams.topMargin = dp(65)
-        gameParams.bottomMargin = dp(8)
-        gameParams.leftMargin = dp(8)
-        gameParams.rightMargin = dp(8)
+        gp.topMargin = dp(62)
+        gp.leftMargin = dp(8)
+        gp.rightMargin = dp(8)
+        gp.bottomMargin = dp(8)
 
-        frame.addView(gameView, gameParams)
+        frame.addView(game, gp)
 
         return frame
     }
 
-    // ---------------------------------------------------------
+    // =========================================================
     // SNAKE
-    // ---------------------------------------------------------
+    // =========================================================
 
     private fun showSnake() {
 
         val game = SnakeView(this)
 
         setContentView(
-            gameContainer(
-                "SNAKE",
-                game
-            )
+            gameContainer("SNAKE", game)
         )
 
-        game.start()
-
         game.alpha = 0f
-        game.scaleX = 0.96f
-        game.scaleY = 0.96f
+        game.scaleX = .96f
+        game.scaleY = .96f
 
         game.animate()
             .alpha(1f)
@@ -457,51 +449,65 @@ class MainActivity : Activity() {
             .scaleY(1f)
             .setDuration(350)
             .start()
+
+        game.start()
     }
 
-    private class SnakeView(context: Context) : View(context) {
+    private class SnakeView(
+        context: Context
+    ) : View(context) {
 
-        private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+        private val paint =
+            Paint(Paint.ANTI_ALIAS_FLAG)
 
         private val cols = 18
         private val rows = 25
 
-        private val snake = mutableListOf<Pair<Int, Int>>()
+        private val snake =
+            mutableListOf<Pair<Int, Int>>()
 
-        private var food = Pair(10, 10)
+        private var food =
+            Pair(10, 10)
 
         private var dx = 1
         private var dy = 0
 
-        private var nextDx = 1
-        private var nextDy = 0
+        private var ndx = 1
+        private var ndy = 0
 
         private var score = 0
         private var running = false
-        private var gameOver = false
+        private var over = false
 
-        private var lastX = 0f
-        private var lastY = 0f
+        private var downX = 0f
+        private var downY = 0f
 
         private val prefs =
-            context.getSharedPreferences("records", Context.MODE_PRIVATE)
+            context.getSharedPreferences(
+                "records",
+                Context.MODE_PRIVATE
+            )
 
         init {
-            setBackgroundColor(Color.rgb(247, 248, 250))
             reset()
         }
 
         fun start() {
+
+            if (running) return
+
             running = true
 
             post(object : Runnable {
+
                 override fun run() {
 
-                    if (running && !gameOver) {
-                        update()
-                        invalidate()
-                        postDelayed(this, 145)
-                    }
+                    if (!running || over) return
+
+                    update()
+                    invalidate()
+
+                    postDelayed(this, 145)
                 }
             })
         }
@@ -517,11 +523,11 @@ class MainActivity : Activity() {
             dx = 1
             dy = 0
 
-            nextDx = 1
-            nextDy = 0
+            ndx = 1
+            ndy = 0
 
             score = 0
-            gameOver = false
+            over = false
 
             food = randomFood()
 
@@ -544,8 +550,8 @@ class MainActivity : Activity() {
 
         private fun update() {
 
-            dx = nextDx
-            dy = nextDy
+            dx = ndx
+            dy = ndy
 
             val head = snake.first()
 
@@ -570,24 +576,26 @@ class MainActivity : Activity() {
             if (newHead == food) {
 
                 score++
-
                 food = randomFood()
 
             } else {
 
-                snake.removeAt(snake.lastIndex)
+                snake.removeAt(
+                    snake.lastIndex
+                )
             }
         }
 
         private fun endGame() {
 
-            gameOver = true
             running = false
+            over = true
 
             val old =
                 prefs.getInt("snake_best", 0)
 
             if (score > old) {
+
                 prefs.edit()
                     .putInt("snake_best", score)
                     .apply()
@@ -603,45 +611,50 @@ class MainActivity : Activity() {
             val w = width.toFloat()
             val h = height.toFloat()
 
-            val cell =
-                min(
-                    (w - 20f) / cols,
-                    (h - 105f) / rows
-                )
+            val cell = min(
+                (w - 20f) / cols,
+                (h - 105f) / rows
+            )
 
             val boardW = cell * cols
             val boardH = cell * rows
 
-            val left = (w - boardW) / 2f
-            val top = 65f
+            val left =
+                (w - boardW) / 2f
 
-            // امتیاز
-            paint.color = Color.rgb(60, 68, 77)
-            paint.textSize = 18f
-            paint.typeface = Typeface.DEFAULT_BOLD
+            val top = 62f
+
+            paint.color = Color.rgb(
+                65, 72, 80
+            )
+
+            paint.textSize = 17f
+            paint.typeface =
+                Typeface.DEFAULT_BOLD
 
             canvas.drawText(
                 "SCORE  $score",
                 left,
-                32f,
+                30f,
                 paint
             )
 
             val best =
                 prefs.getInt("snake_best", 0)
 
-            paint.color = Color.rgb(125, 130, 138)
+            paint.color = Color.rgb(
+                135, 140, 146
+            )
+
             paint.textSize = 14f
-            paint.typeface = Typeface.DEFAULT
 
             canvas.drawText(
                 "BEST  $best",
-                left + boardW - 75f,
-                32f,
+                left + boardW - 72f,
+                30f,
                 paint
             )
 
-            // صفحه
             paint.color = Color.WHITE
 
             canvas.drawRoundRect(
@@ -654,14 +667,17 @@ class MainActivity : Activity() {
                 paint
             )
 
-            // خطوط خیلی ظریف
-            paint.color = Color.rgb(238, 240, 243)
+            // GRID
+            paint.color = Color.rgb(
+                238, 240, 243
+            )
             paint.style = Paint.Style.STROKE
             paint.strokeWidth = 1f
 
             for (i in 0..cols) {
 
-                val x = left + i * cell
+                val x =
+                    left + i * cell
 
                 canvas.drawLine(
                     x,
@@ -674,7 +690,8 @@ class MainActivity : Activity() {
 
             for (i in 0..rows) {
 
-                val y = top + i * cell
+                val y =
+                    top + i * cell
 
                 canvas.drawLine(
                     left,
@@ -687,27 +704,34 @@ class MainActivity : Activity() {
 
             paint.style = Paint.Style.FILL
 
-            // غذا
-            paint.color = Color.rgb(40, 180, 130)
+            // FOOD
+            paint.color = green
 
             canvas.drawCircle(
-                left + food.first * cell + cell / 2f,
-                top + food.second * cell + cell / 2f,
-                cell * .34f,
+                left +
+                    food.first * cell +
+                    cell / 2f,
+                top +
+                    food.second * cell +
+                    cell / 2f,
+                cell * .32f,
                 paint
             )
 
-            // مار
+            // SNAKE
             snake.forEachIndexed { index, p ->
 
                 paint.color =
                     if (index == 0)
-                        Color.rgb(25, 49, 79)
+                        navy
                     else
-                        Color.rgb(50, 79, 110)
+                        Color.rgb(54, 82, 111)
 
-                val x = left + p.first * cell
-                val y = top + p.second * cell
+                val x =
+                    left + p.first * cell
+
+                val y =
+                    top + p.second * cell
 
                 canvas.drawRoundRect(
                     x + 2f,
@@ -720,10 +744,10 @@ class MainActivity : Activity() {
                 )
             }
 
-            if (gameOver) {
+            if (over) {
 
                 paint.color = Color.argb(
-                    225,
+                    230,
                     247,
                     248,
                     250
@@ -739,44 +763,54 @@ class MainActivity : Activity() {
                     paint
                 )
 
-                paint.color = Color.rgb(25, 49, 79)
-                paint.textAlign = Paint.Align.CENTER
+                paint.color = navy
+                paint.textAlign =
+                    Paint.Align.CENTER
+
                 paint.textSize = 27f
-                paint.typeface = Typeface.DEFAULT_BOLD
+                paint.typeface =
+                    Typeface.DEFAULT_BOLD
 
                 canvas.drawText(
                     "GAME OVER",
                     w / 2f,
-                    top + boardH / 2f - 15f,
+                    top + boardH / 2f - 12f,
                     paint
                 )
 
-                paint.textSize = 17f
-                paint.typeface = Typeface.DEFAULT
+                paint.textSize = 16f
+                paint.typeface =
+                    Typeface.DEFAULT
 
                 canvas.drawText(
-                    "Tap to play again",
+                    "برای شروع دوباره لمس کن",
                     w / 2f,
-                    top + boardH / 2f + 22f,
+                    top + boardH / 2f + 23f,
                     paint
                 )
 
-                paint.textAlign = Paint.Align.LEFT
+                paint.textAlign =
+                    Paint.Align.LEFT
             }
         }
 
-        override fun onTouchEvent(event: MotionEvent): Boolean {
+        override fun onTouchEvent(
+            event: MotionEvent
+        ): Boolean {
 
             when (event.action) {
 
                 MotionEvent.ACTION_DOWN -> {
 
-                    lastX = event.x
-                    lastY = event.y
+                    downX = event.x
+                    downY = event.y
 
-                    if (gameOver) {
+                    if (over) {
+
                         reset()
                         start()
+
+                        return true
                     }
 
                     return true
@@ -784,31 +818,56 @@ class MainActivity : Activity() {
 
                 MotionEvent.ACTION_UP -> {
 
-                    val diffX = event.x - lastX
-                    val diffY = event.y - lastY
+                    val dxTouch =
+                        event.x - downX
 
-                    if (abs(diffX) > abs(diffY)) {
+                    val dyTouch =
+                        event.y - downY
 
-                        if (diffX > 30 && dx != -1) {
-                            nextDx = 1
-                            nextDy = 0
+                    if (
+                        abs(dxTouch) < 25f &&
+                        abs(dyTouch) < 25f
+                    ) {
+                        return true
+                    }
+
+                    if (
+                        abs(dxTouch) >
+                        abs(dyTouch)
+                    ) {
+
+                        if (
+                            dxTouch > 0 &&
+                            dx != -1
+                        ) {
+                            ndx = 1
+                            ndy = 0
                         }
 
-                        if (diffX < -30 && dx != 1) {
-                            nextDx = -1
-                            nextDy = 0
+                        if (
+                            dxTouch < 0 &&
+                            dx != 1
+                        ) {
+                            ndx = -1
+                            ndy = 0
                         }
 
                     } else {
 
-                        if (diffY > 30 && dy != -1) {
-                            nextDx = 0
-                            nextDy = 1
+                        if (
+                            dyTouch > 0 &&
+                            dy != -1
+                        ) {
+                            ndx = 0
+                            ndy = 1
                         }
 
-                        if (diffY < -30 && dy != 1) {
-                            nextDx = 0
-                            nextDy = -1
+                        if (
+                            dyTouch < 0 &&
+                            dy != 1
+                        ) {
+                            ndx = 0
+                            ndy = -1
                         }
                     }
 
@@ -820,48 +879,48 @@ class MainActivity : Activity() {
         }
     }
 
-    // ---------------------------------------------------------
+    // =========================================================
     // BREAKOUT
-    // ---------------------------------------------------------
+    // =========================================================
 
     private fun showBreakout() {
 
         val game = BreakoutView(this)
 
         setContentView(
-            gameContainer(
-                "BREAKOUT",
-                game
-            )
+            gameContainer("BREAKOUT", game)
         )
 
         game.start()
     }
 
-    private class BreakoutView(context: Context) : View(context) {
+    private class BreakoutView(
+        context: Context
+    ) : View(context) {
 
-        private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+        private val paint =
+            Paint(Paint.ANTI_ALIAS_FLAG)
 
         private var paddleX = 0f
 
         private var ballX = 0f
         private var ballY = 0f
 
-        private var vx = 6f
-        private var vy = -8f
+        private var vx = 5.5f
+        private var vy = -7.5f
 
         private var score = 0
-        private var running = false
         private var over = false
+        private var running = false
 
-        private val bricks = ArrayList<RectF>()
+        private val bricks =
+            ArrayList<RectF>()
 
         private val prefs =
-            context.getSharedPreferences("records", Context.MODE_PRIVATE)
-
-        init {
-            setBackgroundColor(Color.rgb(247, 248, 250))
-        }
+            context.getSharedPreferences(
+                "records",
+                Context.MODE_PRIVATE
+            )
 
         fun start() {
 
@@ -872,13 +931,16 @@ class MainActivity : Activity() {
                 running = true
 
                 post(object : Runnable {
+
                     override fun run() {
 
-                        if (running && !over) {
-                            update()
-                            invalidate()
-                            postDelayed(this, 16)
-                        }
+                        if (!running || over)
+                            return
+
+                        update()
+                        invalidate()
+
+                        postDelayed(this, 16)
                     }
                 })
             }
@@ -894,30 +956,33 @@ class MainActivity : Activity() {
             ballX = width / 2f
             ballY = height * .70f
 
-            vx = 6f
-            vy = -8f
+            vx = 5.5f
+            vy = -7.5f
 
             bricks.clear()
 
-            val gap = 8f
-            val bw = (width - 40f - gap * 4) / 5f
+            val gap = 7f
+            val bw =
+                (width - 40f - gap * 4f) / 5f
 
             for (r in 0 until 5) {
 
                 for (c in 0 until 5) {
 
                     val x =
-                        20f + c * (bw + gap)
+                        20f +
+                            c * (bw + gap)
 
                     val y =
-                        75f + r * 35f
+                        72f +
+                            r * 34f
 
                     bricks.add(
                         RectF(
                             x,
                             y,
                             x + bw,
-                            y + 27f
+                            y + 26f
                         )
                     )
                 }
@@ -929,13 +994,13 @@ class MainActivity : Activity() {
             ballX += vx
             ballY += vy
 
-            if (ballX < 8f) {
-                ballX = 8f
+            if (ballX < 9f) {
+                ballX = 9f
                 vx = abs(vx)
             }
 
-            if (ballX > width - 8f) {
-                ballX = width - 8f
+            if (ballX > width - 9f) {
+                ballX = width - 9f
                 vx = -abs(vx)
             }
 
@@ -944,29 +1009,40 @@ class MainActivity : Activity() {
                 vy = abs(vy)
             }
 
-            val paddleY = height - 75f
+            val paddleY =
+                height - 72f
 
             if (
                 ballY + 10f >= paddleY &&
-                ballY + 10f <= paddleY + 25f &&
-                ballX >= paddleX - 55f &&
-                ballX <= paddleX + 55f &&
+                ballY <= paddleY + 25f &&
+                ballX >= paddleX - 58f &&
+                ballX <= paddleX + 58f &&
                 vy > 0
             ) {
+
+                ballY = paddleY - 10f
                 vy = -abs(vy)
+
+                val hit =
+                    (ballX - paddleX) / 58f
+
+                vx =
+                    (hit * 7f)
+                        .coerceIn(-7f, 7f)
             }
 
-            val iterator = bricks.iterator()
+            val iterator =
+                bricks.iterator()
 
             while (iterator.hasNext()) {
 
-                val brick = iterator.next()
+                val b = iterator.next()
 
                 if (
-                    ballX >= brick.left &&
-                    ballX <= brick.right &&
-                    ballY >= brick.top &&
-                    ballY <= brick.bottom
+                    ballX >= b.left &&
+                    ballX <= b.right &&
+                    ballY >= b.top &&
+                    ballY <= b.bottom
                 ) {
 
                     iterator.remove()
@@ -979,73 +1055,87 @@ class MainActivity : Activity() {
             }
 
             if (bricks.isEmpty()) {
-                over = true
-                running = false
+                finish()
             }
 
             if (ballY > height + 30f) {
-
-                over = true
-                running = false
-
-                val old =
-                    prefs.getInt("breakout_best", 0)
-
-                if (score > old) {
-                    prefs.edit()
-                        .putInt("breakout_best", score)
-                        .apply()
-                }
+                finish()
             }
+        }
+
+        private fun finish() {
+
+            running = false
+            over = true
+
+            val old =
+                prefs.getInt(
+                    "breakout_best",
+                    0
+                )
+
+            if (score > old) {
+
+                prefs.edit()
+                    .putInt(
+                        "breakout_best",
+                        score
+                    )
+                    .apply()
+            }
+
+            invalidate()
         }
 
         override fun onDraw(canvas: Canvas) {
 
             super.onDraw(canvas)
 
-            paint.color = Color.rgb(55, 63, 72)
-            paint.textSize = 18f
-            paint.typeface = Typeface.DEFAULT_BOLD
+            paint.color = dark
+            paint.textSize = 17f
+            paint.typeface =
+                Typeface.DEFAULT_BOLD
 
             canvas.drawText(
                 "SCORE  $score",
                 20f,
-                35f,
+                32f,
                 paint
             )
 
-            // bricks
-            bricks.forEachIndexed { i, rect ->
+            bricks.forEachIndexed { i, b ->
 
                 paint.color =
                     if (i % 2 == 0)
-                        Color.rgb(25, 49, 79)
+                        navy
                     else
-                        Color.rgb(47, 76, 108)
+                        Color.rgb(
+                            52,
+                            80,
+                            109
+                        )
 
                 canvas.drawRoundRect(
-                    rect,
+                    b,
                     7f,
                     7f,
                     paint
                 )
             }
 
-            // paddle
-            paint.color = Color.rgb(25, 49, 79)
+            paint.color = navy
 
             canvas.drawRoundRect(
-                paddleX - 55f,
-                height - 75f,
-                paddleX + 55f,
-                height - 55f,
+                paddleX - 58f,
+                height - 72f,
+                paddleX + 58f,
+                height - 50f,
                 10f,
                 10f,
                 paint
             )
 
-            // ball
-            paint.color = Color.rgb(40, 180, 130)
+            paint.color = green
 
             canvas.drawCircle(
                 ballX,
@@ -1057,7 +1147,7 @@ class MainActivity : Activity() {
             if (over) {
 
                 paint.color = Color.argb(
-                    225,
+                    230,
                     247,
                     248,
                     250
@@ -1071,57 +1161,78 @@ class MainActivity : Activity() {
                     paint
                 )
 
-                paint.color = Color.rgb(25, 49, 79)
-                paint.textAlign = Paint.Align.CENTER
+                paint.color = navy
+                paint.textAlign =
+                    Paint.Align.CENTER
+
                 paint.textSize = 28f
-                paint.typeface = Typeface.DEFAULT_BOLD
+                paint.typeface =
+                    Typeface.DEFAULT_BOLD
 
                 canvas.drawText(
-                    if (bricks.isEmpty()) "YOU WIN" else "GAME OVER",
+                    if (bricks.isEmpty())
+                        "YOU WIN"
+                    else
+                        "GAME OVER",
                     width / 2f,
                     height / 2f,
                     paint
                 )
 
                 paint.textSize = 16f
-                paint.typeface = Typeface.DEFAULT
+                paint.typeface =
+                    Typeface.DEFAULT
 
                 canvas.drawText(
-                    "Tap to restart",
+                    "برای شروع دوباره لمس کن",
                     width / 2f,
                     height / 2f + 35f,
                     paint
                 )
 
-                paint.textAlign = Paint.Align.LEFT
+                paint.textAlign =
+                    Paint.Align.LEFT
             }
         }
 
-        override fun onTouchEvent(event: MotionEvent): Boolean {
+        override fun onTouchEvent(
+            event: MotionEvent
+        ): Boolean {
 
             when (event.action) {
 
                 MotionEvent.ACTION_DOWN -> {
 
                     if (over) {
+
                         reset()
                         start()
-                        return true
+
+                    } else {
+
+                        paddleX =
+                            event.x.coerceIn(
+                                58f,
+                                width - 58f
+                            )
                     }
 
-                    paddleX = event.x
-                    invalidate()
                     return true
                 }
 
                 MotionEvent.ACTION_MOVE -> {
 
-                    paddleX = event.x.coerceIn(
-                        60f,
-                        width - 60f
-                    )
+                    if (!over) {
 
-                    invalidate()
+                        paddleX =
+                            event.x.coerceIn(
+                                58f,
+                                width - 58f
+                            )
+
+                        invalidate()
+                    }
+
                     return true
                 }
             }
@@ -1130,31 +1241,30 @@ class MainActivity : Activity() {
         }
     }
 
-    // ---------------------------------------------------------
+    // =========================================================
     // FLAPPY
-    // ---------------------------------------------------------
+    // =========================================================
 
     private fun showFlappy() {
 
         val game = FlappyView(this)
 
         setContentView(
-            gameContainer(
-                "FLAPPY",
-                game
-            )
+            gameContainer("FLAPPY", game)
         )
 
         game.start()
     }
 
-    private class FlappyView(context: Context) : View(context) {
+    private class FlappyView(
+        context: Context
+    ) : View(context) {
 
-        private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+        private val paint =
+            Paint(Paint.ANTI_ALIAS_FLAG)
 
         private var birdX = 0f
         private var birdY = 0f
-
         private var velocity = 0f
 
         private var pipeX = 0f
@@ -1162,13 +1272,14 @@ class MainActivity : Activity() {
 
         private var score = 0
 
-        private var running = false
         private var over = false
-
-        private var lastPipe = 0f
+        private var running = false
 
         private val prefs =
-            context.getSharedPreferences("records", Context.MODE_PRIVATE)
+            context.getSharedPreferences(
+                "records",
+                Context.MODE_PRIVATE
+            )
 
         fun start() {
 
@@ -1179,15 +1290,16 @@ class MainActivity : Activity() {
                 running = true
 
                 post(object : Runnable {
+
                     override fun run() {
 
-                        if (running && !over) {
+                        if (!running || over)
+                            return
 
-                            update()
-                            invalidate()
+                        update()
+                        invalidate()
 
-                            postDelayed(this, 16)
-                        }
+                        postDelayed(this, 16)
                     }
                 })
             }
@@ -1196,17 +1308,24 @@ class MainActivity : Activity() {
         private fun reset() {
 
             birdX = width * .28f
-            birdY = height * .45f
+            birdY = height * .43f
 
             velocity = 0f
 
-            pipeX = width + 100f
-            gapY = height * .45f
+            pipeX = width + 80f
+
+            gapY =
+                (height * .45f)
+                    .coerceIn(
+                        150f,
+                        max(
+                            151f,
+                            height - 150f
+                        )
+                    )
 
             score = 0
-
             over = false
-            lastPipe = pipeX
         }
 
         private fun flap() {
@@ -1218,43 +1337,54 @@ class MainActivity : Activity() {
             velocity += .42f
             birdY += velocity
 
-            pipeX -= 4.8f
+            pipeX -= 4.6f
 
-            if (pipeX < -70f) {
+            if (pipeX < -75f) {
 
-                pipeX = width + 50f
+                pipeX =
+                    width + 40f
 
-                gapY = Random.nextInt(
-                    max(130, height / 4),
+                val minGap =
+                    140
+
+                val maxGap =
                     max(
-                        131,
-                        height * 3 / 4
+                        minGap + 1,
+                        height - 170
                     )
-                ).toFloat()
+
+                gapY =
+                    Random.nextInt(
+                        minGap,
+                        maxGap
+                    ).toFloat()
 
                 score++
             }
 
-            val birdRadius = 17f
+            val radius = 17f
 
             if (
-                birdY - birdRadius < 60f ||
-                birdY + birdRadius > height
+                birdY - radius < 62f ||
+                birdY + radius > height
             ) {
                 endGame()
                 return
             }
 
             val gap = 145f
-            val pipeWidth = 60f
+            val pipeWidth = 62f
 
             val hitX =
-                birdX + birdRadius > pipeX &&
-                birdX - birdRadius < pipeX + pipeWidth
+                birdX + radius > pipeX &&
+                birdX - radius <
+                pipeX + pipeWidth
 
             val hitY =
-                birdY - birdRadius < gapY - gap / 2f ||
-                birdY + birdRadius > gapY + gap / 2f
+                birdY - radius <
+                gapY - gap / 2f ||
+                birdY + radius >
+                gapY + gap / 2f
 
             if (hitX && hitY) {
                 endGame()
@@ -1267,71 +1397,80 @@ class MainActivity : Activity() {
             over = true
 
             val old =
-                prefs.getInt("flappy_best", 0)
+                prefs.getInt(
+                    "flappy_best",
+                    0
+                )
 
             if (score > old) {
 
                 prefs.edit()
-                    .putInt("flappy_best", score)
+                    .putInt(
+                        "flappy_best",
+                        score
+                    )
                     .apply()
             }
+
+            invalidate()
         }
 
         override fun onDraw(canvas: Canvas) {
 
             super.onDraw(canvas)
 
-            // سقف
-            paint.color = Color.rgb(225, 229, 234)
+            paint.color =
+                Color.rgb(225, 229, 234)
 
             canvas.drawRect(
                 0f,
-                55f,
+                56f,
                 width.toFloat(),
                 60f,
                 paint
             )
 
-            // امتیاز
-            paint.color = Color.rgb(55, 63, 72)
-            paint.textAlign = Paint.Align.CENTER
-            paint.textSize = 24f
-            paint.typeface = Typeface.DEFAULT_BOLD
+            paint.color = dark
+            paint.textAlign =
+                Paint.Align.CENTER
+
+            paint.textSize = 23f
+            paint.typeface =
+                Typeface.DEFAULT_BOLD
 
             canvas.drawText(
                 "$score",
                 width / 2f,
-                38f,
+                40f,
                 paint
             )
 
-            // pipe
             val gap = 145f
 
-            paint.color = Color.rgb(25, 49, 79)
+            paint.color = navy
 
             canvas.drawRoundRect(
                 pipeX,
                 60f,
-                pipeX + 60f,
+                pipeX + 62f,
                 gapY - gap / 2f,
-                10f,
-                10f,
+                9f,
+                9f,
                 paint
             )
 
             canvas.drawRoundRect(
                 pipeX,
                 gapY + gap / 2f,
-                pipeX + 60f,
+                pipeX + 62f,
                 height.toFloat(),
-                10f,
-                10f,
+                9f,
+                9f,
                 paint
             )
 
-            // bird
-            paint.color = Color.rgb(40, 180, 130)
+            // BIRD
+            paint.color = green
 
             canvas.drawCircle(
                 birdX,
@@ -1349,7 +1488,8 @@ class MainActivity : Activity() {
                 paint
             )
 
-            paint.color = Color.rgb(30, 35, 40)
+            paint.color =
+                Color.rgb(30, 35, 40)
 
             canvas.drawCircle(
                 birdX + 7f,
@@ -1361,7 +1501,7 @@ class MainActivity : Activity() {
             if (over) {
 
                 paint.color = Color.argb(
-                    225,
+                    230,
                     247,
                     248,
                     250
@@ -1375,9 +1515,10 @@ class MainActivity : Activity() {
                     paint
                 )
 
-                paint.color = Color.rgb(25, 49, 79)
+                paint.color = navy
                 paint.textSize = 28f
-                paint.typeface = Typeface.DEFAULT_BOLD
+                paint.typeface =
+                    Typeface.DEFAULT_BOLD
 
                 canvas.drawText(
                     "GAME OVER",
@@ -1387,4 +1528,497 @@ class MainActivity : Activity() {
                 )
 
                 paint.textSize = 16f
-               
+                paint.typeface =
+                    Typeface.DEFAULT
+
+                canvas.drawText(
+                    "برای شروع دوباره لمس کن",
+                    width / 2f,
+                    height / 2f + 35f,
+                    paint
+                )
+            }
+
+            paint.textAlign =
+                Paint.Align.LEFT
+        }
+
+        override fun onTouchEvent(
+            event: MotionEvent
+        ): Boolean {
+
+            if (
+                event.action ==
+                MotionEvent.ACTION_DOWN
+            ) {
+
+                if (over) {
+
+                    reset()
+                    start()
+
+                } else {
+
+                    flap()
+                }
+
+                return true
+            }
+
+            return true
+        }
+    }
+
+    // =========================================================
+    // TIC TAC TOE
+    // =========================================================
+
+    private fun showTicTacToe() {
+
+        val game = TicTacToeView(this)
+
+        setContentView(
+            gameContainer(
+                "TIC-TAC-TOE",
+                game
+            )
+        )
+
+        game.alpha = 0f
+
+        game.animate()
+            .alpha(1f)
+            .setDuration(350)
+            .start()
+    }
+
+    private class TicTacToeView(
+        context: Context
+    ) : View(context) {
+
+        private val paint =
+            Paint(Paint.ANTI_ALIAS_FLAG)
+
+        private val board =
+            Array(3) {
+                Array(3) { "" }
+            }
+
+        private var player = "X"
+        private var finished = false
+        private var result = ""
+
+        override fun onDraw(canvas: Canvas) {
+
+            super.onDraw(canvas)
+
+            val size = min(
+                width * .84f,
+                height * .62f
+            )
+
+            val left =
+                (width - size) / 2f
+
+            val top = 105f
+            val cell = size / 3f
+
+            paint.color = navy
+            paint.style =
+                Paint.Style.STROKE
+            paint.strokeWidth = 5f
+            paint.strokeCap =
+                Paint.Cap.ROUND
+
+            for (i in 1..2) {
+
+                canvas.drawLine(
+                    left + cell * i,
+                    top + 8f,
+                    left + cell * i,
+                    top + size - 8f,
+                    paint
+                )
+
+                canvas.drawLine(
+                    left + 8f,
+                    top + cell * i,
+                    left + size - 8f,
+                    top + cell * i,
+                    paint
+                )
+            }
+
+            paint.style =
+                Paint.Style.FILL
+
+            for (r in 0..2) {
+
+                for (c in 0..2) {
+
+                    val v =
+                        board[r][c]
+
+                    if (v.isNotEmpty()) {
+
+                        paint.color =
+                            if (v == "X")
+                                navy
+                            else
+                                green
+
+                        paint.textAlign =
+                            Paint.Align.CENTER
+
+                        paint.textSize =
+                            cell * .55f
+
+                        paint.typeface =
+                            Typeface.DEFAULT_BOLD
+
+                        canvas.drawText(
+                            v,
+                            left +
+                                c * cell +
+                                cell / 2f,
+                            top +
+                                r * cell +
+                                cell * .68f,
+                            paint
+                        )
+                    }
+                }
+            }
+
+            paint.color =
+                Color.rgb(70, 77, 85)
+
+            paint.textAlign =
+                Paint.Align.CENTER
+
+            paint.textSize = 18f
+            paint.typeface =
+                Typeface.DEFAULT_BOLD
+
+            canvas.drawText(
+                if (finished)
+                    result
+                else
+                    "نوبت بازیکن $player",
+                width / 2f,
+                65f,
+                paint
+            )
+
+            if (finished) {
+
+                paint.color =
+                    Color.rgb(130, 135, 141)
+
+                paint.textSize = 15f
+                paint.typeface =
+                    Typeface.DEFAULT
+
+                canvas.drawText(
+                    "برای شروع دوباره لمس کن",
+                    width / 2f,
+                    top + size + 48f,
+                    paint
+                )
+            }
+
+            paint.textAlign =
+                Paint.Align.LEFT
+        }
+
+        override fun onTouchEvent(
+            event: MotionEvent
+        ): Boolean {
+
+            if (
+                event.action !=
+                MotionEvent.ACTION_DOWN
+            ) {
+                return true
+            }
+
+            if (finished) {
+
+                clearBoard()
+
+                invalidate()
+
+                return true
+            }
+
+            val size = min(
+                width * .84f,
+                height * .62f
+            )
+
+            val left =
+                (width - size) / 2f
+
+            val top = 105f
+            val cell = size / 3f
+
+            val col =
+                ((event.x - left) / cell)
+                    .toInt()
+
+            val row =
+                ((event.y - top) / cell)
+                    .toInt()
+
+            if (
+                row !in 0..2 ||
+                col !in 0..2
+            ) {
+                return true
+            }
+
+            if (
+                board[row][col].isNotEmpty()
+            ) {
+                return true
+            }
+
+            board[row][col] = player
+
+            if (win(player)) {
+
+                finished = true
+                result =
+                    "بازیکن $player برنده شد"
+
+            } else if (full()) {
+
+                finished = true
+                result = "مساوی شد"
+
+            } else {
+
+                player =
+                    if (player == "X")
+                        "O"
+                    else
+                        "X"
+            }
+
+            invalidate()
+
+            return true
+        }
+
+        private fun clearBoard() {
+
+            for (r in 0..2) {
+                for (c in 0..2) {
+                    board[r][c] = ""
+                }
+            }
+
+            player = "X"
+            finished = false
+            result = ""
+        }
+
+        private fun full(): Boolean {
+
+            for (r in 0..2) {
+                for (c in 0..2) {
+
+                    if (
+                        board[r][c].isEmpty()
+                    ) {
+                        return false
+                    }
+                }
+            }
+
+            return true
+        }
+
+        private fun win(
+            p: String
+        ): Boolean {
+
+            for (i in 0..2) {
+
+                if (
+                    board[i][0] == p &&
+                    board[i][1] == p &&
+                    board[i][2] == p
+                ) {
+                    return true
+                }
+
+                if (
+                    board[0][i] == p &&
+                    board[1][i] == p &&
+                    board[2][i] == p
+                ) {
+                    return true
+                }
+            }
+
+            if (
+                board[0][0] == p &&
+                board[1][1] == p &&
+                board[2][2] == p
+            ) {
+                return true
+            }
+
+            if (
+                board[0][2] == p &&
+                board[1][1] == p &&
+                board[2][0] == p
+            ) {
+                return true
+            }
+
+            return false
+        }
+    }
+
+    // =========================================================
+    // CUSTOM LOGO
+    // =========================================================
+
+    private class ArcadeLogoView(
+        context: Context
+    ) : View(context) {
+
+        private val paint =
+            Paint(Paint.ANTI_ALIAS_FLAG)
+
+        override fun onDraw(
+            canvas: Canvas
+        ) {
+
+            super.onDraw(canvas)
+
+            val cx = width / 2f
+            val cy = height / 2f
+
+            val r =
+                min(width, height) * .43f
+
+            // Outer geometric circle
+            paint.color =
+                Color.rgb(24, 48, 78)
+
+            canvas.drawCircle(
+                cx,
+                cy,
+                r,
+                paint
+            )
+
+            // Inner display
+            paint.color =
+                Color.rgb(247, 248, 250)
+
+            canvas.drawRoundRect(
+                cx - r * .59f,
+                cy - r * .44f,
+                cx + r * .59f,
+                cy + r * .45f,
+                r * .24f,
+                r * .24f,
+                paint
+            )
+
+            // Eyes
+            paint.color =
+                Color.rgb(24, 48, 78)
+
+            canvas.drawCircle(
+                cx - r * .23f,
+                cy - r * .10f,
+                r * .075f,
+                paint
+            )
+
+            canvas.drawCircle(
+                cx + r * .23f,
+                cy - r * .10f,
+                r * .075f,
+                paint
+            )
+
+            // Smile
+            paint.style =
+                Paint.Style.STROKE
+
+            paint.strokeWidth =
+                r * .07f
+
+            paint.strokeCap =
+                Paint.Cap.ROUND
+
+            val smile = RectF(
+                cx - r * .34f,
+                cy - r * .03f,
+                cx + r * .34f,
+                cy + r * .39f
+            )
+
+            canvas.drawArc(
+                smile,
+                15f,
+                150f,
+                false,
+                paint
+            )
+
+            paint.style =
+                Paint.Style.FILL
+        }
+    }
+
+    // =========================================================
+    // CUSTOM WORDMARK
+    // =========================================================
+
+    private class ArcadeWordmarkView(
+        context: Context
+    ) : View(context) {
+
+        private val paint =
+            Paint(Paint.ANTI_ALIAS_FLAG)
+
+        override fun onDraw(
+            canvas: Canvas
+        ) {
+
+            super.onDraw(canvas)
+
+            paint.color =
+                Color.rgb(24, 48, 78)
+
+            paint.textAlign =
+                Paint.Align.CENTER
+
+            paint.typeface =
+                Typeface.create(
+                    Typeface.DEFAULT,
+                    Typeface.BOLD
+                )
+
+            paint.textSize =
+                min(width, height) * .40f
+
+            canvas.drawText(
+                "POCKET ARCADE",
+                width / 2f,
+                height * .65f,
+                paint
+            )
+
+            paint.textAlign =
+                Paint.Align.LEFT
+        }
+    }
+}
