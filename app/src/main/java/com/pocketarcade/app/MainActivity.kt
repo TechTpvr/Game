@@ -14,11 +14,14 @@ import kotlin.random.Random
 
 class MainActivity : Activity() {
 
-    private val navy = Color.rgb(24, 48, 78)
-    private val green = Color.rgb(42, 181, 132)
-    private val bg = Color.rgb(247, 248, 250)
-    private val dark = Color.rgb(42, 48, 56)
     private lateinit var root: FrameLayout
+
+private companion object {
+    val NAVY = Color.rgb(24, 48, 78)
+    val GREEN = Color.rgb(42, 181, 132)
+    val BG = Color.rgb(247, 248, 250)
+    val DARK = Color.rgb(42, 48, 56)
+}
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
