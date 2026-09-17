@@ -5,1270 +5,1386 @@ import android.os.Bundle
 import android.graphics.*
 import android.graphics.drawable.GradientDrawable
 import android.view.*
+import android.widget.*
 import android.content.Context
-import android.widget.FrameLayout
-import android.widget.TextView
+import android.content.res.ColorStateList
 import kotlin.math.abs
+import kotlin.math.max
 import kotlin.math.min
 import kotlin.random.Random
 
 class MainActivity : Activity() {
 
     private lateinit var root: FrameLayout
-    private lateinit var prefs: android.content.SharedPreferences
+
+    private val navy = Color.rgb(25, 49, 79)
+    private val background = Color.rgb(247, 248, 250)
+    private val textDark = Color.rgb(30, 39, 50)
+    private val gray = Color.rgb(120, 128, 138)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        prefs = getSharedPreferences("records", MODE_PRIVATE)
+        window.statusBarColor = background
+        window.navigationBarColor = background
+        window.decorView.systemUiVisibility = View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+
         showHome()
     }
 
-    private fun base(): FrameLayout {
-        root = FrameLayout(this)
-        root.setBackgroundColor(Color.rgb(246, 247, 249))
-        return root
-    }
-
-    private fun txt(
-        text: String,
-        size: Float,
-        color: Int = Color.rgb(23, 42, 70),
-        bold: Boolean = false
-    ): TextView {
-
-        return TextView(this).apply {
-            this.text = text
-            textSize = size
-            setTextColor(color)
-            gravity = Gravity.CENTER
-
-            if (bold) {
-                typeface = Typeface.create("sans", Typeface.BOLD)
-            }
-        }
-    }
-
-    private fun button(
-        label: String,
-        action: () -> Unit
-    ): TextView {
-
-        val b = txt(
-            label,
-            16f,
-            Color.WHITE,
-            true
-        )
-
-        b.setPadding(24, 18, 24, 18)
-
-        b.background = GradientDrawable().apply {
-            cornerRadius = 28f
-            setColor(Color.rgb(23, 42, 70))
-        }
-
-        b.setOnClickListener {
-            action()
-        }
-
-        return b
-    }
-
-    private fun add(
-        view: View,
-        width: Int,
-        height: Int,
-        gravity: Int,
-        topMargin: Int = 0
-    ) {
-
-        val lp = FrameLayout.LayoutParams(
-            width,
-            height,
-            gravity
-        )
-
-        lp.setMargins(
-            20,
-            topMargin,
-            20,
-            20
-        )
-
-        root.addView(view, lp)
-    }
+    // ---------------------------------------------------------
+    // HOME
+    // ---------------------------------------------------------
 
     private fun showHome() {
 
-        root = base()
-        setContentView(root)
+        root = FrameLayout(this)
+        root.setBackgroundColor(background)
 
-        val logo = LogoView(this)
+        val content = LinearLayout(this)
+        content.orientation = LinearLayout.VERTICAL
+        content.gravity = Gravity.CENTER_HORIZONTAL
 
-        add(
-            logo,
-            180,
-            180,
-            Gravity.TOP or Gravity.CENTER_HORIZONTAL,
-            48
+        val contentParams = FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.MATCH_PARENT,
+            FrameLayout.LayoutParams.MATCH_PARENT
+        )
+        contentParams.setMargins(dp(14), dp(22), dp(14), dp(8))
+        root.addView(content, contentParams)
+
+        // لوگوی اختصاصی هندسی
+        val logo = ArcadeLogoView(this)
+
+        val logoParams = LinearLayout.LayoutParams(dp(105), dp(105))
+        logoParams.gravity = Gravity.CENTER_HORIZONTAL
+        content.addView(logo, logoParams)
+
+        // انیمیشن ورود لوگو
+        logo.alpha = 0f
+        logo.scaleX = 0.65f
+        logo.scaleY = 0.65f
+
+        logo.animate()
+            .alpha(1f)
+            .scaleX(1f)
+            .scaleY(1f)
+            .setDuration(850)
+            .start()
+
+        // نام اختصاصی
+        val title = ArcadeWordmarkView(this)
+
+        val titleParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            dp(58)
+        )
+        titleParams.topMargin = dp(2)
+        content.addView(title, titleParams)
+
+        title.alpha = 0f
+        title.translationY = dp(15).toFloat()
+
+        title.animate()
+            .alpha(1f)
+            .translationY(0f)
+            .setDuration(700)
+            .setStartDelay(300)
+            .start()
+
+        // زیرعنوان
+        val subtitle = TextView(this)
+        subtitle.text = "سه بازی مینیمال، همیشه همراهت"
+        subtitle.textSize = 17f
+        subtitle.setTextColor(Color.rgb(70, 75, 82))
+        subtitle.gravity = Gravity.CENTER
+        subtitle.typeface = Typeface.create("sans", Typeface.NORMAL)
+
+        val subtitleParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            dp(40)
+        )
+        content.addView(subtitle, subtitleParams)
+
+        subtitle.alpha = 0f
+        subtitle.animate()
+            .alpha(1f)
+            .setDuration(600)
+            .setStartDelay(500)
+            .start()
+
+        // فاصله
+        val spacer = Space(this)
+        content.addView(
+            spacer,
+            LinearLayout.LayoutParams(
+                1,
+                dp(12)
+            )
         )
 
-        val title = txt(
-            "POCKET ARCADE",
-            30f,
-            Color.rgb(23, 42, 70),
-            true
-        )
-
-        add(
-            title,
-            -1,
-            70,
-            Gravity.TOP or Gravity.CENTER_HORIZONTAL,
-            230
-        )
-
-        val sub = txt(
-            "سه بازی مینیمال، همیشه همراهت",
-            15f,
-            Color.DKGRAY
-        )
-
-        add(
-            sub,
-            -1,
-            50,
-            Gravity.TOP or Gravity.CENTER_HORIZONTAL,
-            292
-        )
-
-        val snake = button("🐍  مار  •  Snake") {
-            openGame("snake")
-        }
-
-        add(
-            snake,
-            -1,
-            70,
-            Gravity.TOP,
-            365
-        )
-
-        val breakout = button("◼  بریک‌اوت  •  Breakout") {
-            openGame("breakout")
-        }
-
-        add(
-            breakout,
-            -1,
-            70,
-            Gravity.TOP,
-            450
-        )
-
-        val flappy = button("●  فلپی  •  Flappy") {
-            openGame("flappy")
-        }
-
-        add(
-            flappy,
-            -1,
-            70,
-            Gravity.TOP,
-            535
-        )
-
-        val ttt = button("✕  دوز  •  Tic-Tac-Toe") {
-            openGame("ttt")
-        }
-
-        add(
-            ttt,
-            -1,
-            70,
-            Gravity.TOP,
-            620
-        )
-
-        val records = txt(
-            "رکوردها روی همین دستگاه ذخیره می‌شوند ✓",
-            13f,
-            Color.GRAY
-        )
-
-        add(
-            records,
-            -1,
-            45,
-            Gravity.BOTTOM
-        )
-    }
-
-    private fun openGame(type: String) {
-
-        if (type == "ttt") {
-            showTTT()
-            return
-        }
-
-        root = base()
-        setContentView(root)
-
-        val back = txt(
-            "‹",
-            42f,
-            Color.rgb(23, 42, 70),
-            true
-        )
-
-        back.setOnClickListener {
-            showHome()
-        }
-
-        add(
-            back,
-            70,
-            70,
-            Gravity.TOP or Gravity.START,
-            24
-        )
-
-        val titleText = when (type) {
-            "snake" -> "SNAKE"
-            "breakout" -> "BREAKOUT"
-            else -> "FLAPPY"
-        }
-
-        val title = txt(
-            titleText,
-            22f,
-            Color.rgb(23, 42, 70),
-            true
-        )
-
-        add(
-            title,
-            -1,
-            70,
-            Gravity.TOP or Gravity.CENTER_HORIZONTAL,
-            24
-        )
-
-        val board = GameView(
-            this,
-            type,
-            prefs
+        // دکمه‌ها
+        addGameButton(
+            content,
+            "SNAKE",
+            "مار",
+            "●",
+            0
         ) {
-            showHome()
+            showSnake()
         }
 
-        val lp = FrameLayout.LayoutParams(
-            -1,
-            0
-        )
-
-        lp.gravity = Gravity.TOP
-        lp.topMargin = 100
-
-        root.addView(
-            board,
-            lp
-        )
-    }
-
-    private fun showTTT() {
-
-        root = base()
-        setContentView(root)
-
-        val back = txt(
-            "‹",
-            42f,
-            Color.rgb(23, 42, 70),
-            true
-        )
-
-        back.setOnClickListener {
-            showHome()
+        addGameButton(
+            content,
+            "BREAKOUT",
+            "آجرشکن",
+            "■",
+            1
+        ) {
+            showBreakout()
         }
 
-        add(
-            back,
-            70,
-            70,
-            Gravity.TOP or Gravity.START,
-            24
-        )
+        addGameButton(
+            content,
+            "FLAPPY",
+            "پرواز",
+            "◆",
+            2
+        ) {
+            showFlappy()
+        }
 
-        val title = txt(
+        addGameButton(
+            content,
             "TIC-TAC-TOE",
-            22f,
-            Color.rgb(23, 42, 70),
-            true
-        )
+            "دوز",
+            "×",
+            3
+        ) {
+            showTicTacToe()
+        }
 
-        add(
-            title,
-            -1,
-            70,
-            Gravity.TOP,
-            24
-        )
+        // فضای خالی
+        val bottomSpace = Space(this)
 
-        val board = TTTView(
-            this,
-            prefs
-        )
-
-        val lp = FrameLayout.LayoutParams(
-            -1,
-            520
-        )
-
-        lp.gravity = Gravity.TOP
-        lp.topMargin = 115
-
-        lp.setMargins(
-            25,
-            115,
-            25,
+        val bottomParams = LinearLayout.LayoutParams(
+            1,
             0
         )
+        bottomParams.weight = 1f
+        content.addView(bottomSpace, bottomParams)
 
-        root.addView(
-            board,
-            lp
-        )
-    }
-}
+        val footer = TextView(this)
+        footer.text = "✓  رکوردها روی همین دستگاه ذخیره می‌شوند"
+        footer.textSize = 16f
+        footer.setTextColor(Color.rgb(145, 148, 153))
+        footer.gravity = Gravity.CENTER
+        footer.typeface = Typeface.DEFAULT
 
-class LogoView(context: Context) : View(context) {
-
-    private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-
-    override fun onDraw(canvas: Canvas) {
-
-        super.onDraw(canvas)
-
-        val cx = width / 2f
-        val cy = height / 2f
-
-        paint.color = Color.rgb(23, 42, 70)
-        paint.style = Paint.Style.FILL
-
-        canvas.drawCircle(
-            cx,
-            cy,
-            72f,
-            paint
+        content.addView(
+            footer,
+            LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                dp(45)
+            )
         )
 
-        paint.color = Color.WHITE
-
-        canvas.drawRoundRect(
-            cx - 42f,
-            cy - 42f,
-            cx + 42f,
-            cy + 42f,
-            18f,
-            18f,
-            paint
-        )
-
-        paint.color = Color.rgb(23, 42, 70)
-
-        canvas.drawCircle(
-            cx - 16f,
-            cy - 10f,
-            8f,
-            paint
-        )
-
-        canvas.drawCircle(
-            cx + 16f,
-            cy - 10f,
-            8f,
-            paint
-        )
-
-        paint.style = Paint.Style.STROKE
-        paint.strokeWidth = 8f
-
-        canvas.drawArc(
-            cx - 30f,
-            cy - 4f,
-            cx + 30f,
-            cy + 42f,
-            20f,
-            140f,
-            false,
-            paint
-        )
-    }
-}
-
-class GameView(
-    context: Context,
-    private val type: String,
-    private val prefs: android.content.SharedPreferences,
-    private val home: () -> Unit
-) : View(context) {
-
-    private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-
-    private val navy = Color.rgb(23, 42, 70)
-
-    private var score = 0
-
-    private var best =
-        prefs.getInt("best_$type", 0)
-
-    private var running = false
-
-    private var over = false
-
-    private var last =
-        System.currentTimeMillis()
-
-    // Snake
-
-    private val snake =
-        ArrayList<Point>()
-
-    private var dir =
-        Point(1, 0)
-
-    private var food =
-        Point(10, 10)
-
-    // Flappy
-
-    private var birdY = 0f
-    private var vel = 0f
-    private var pipeX = 0f
-    private var gapY = 0f
-
-    // Breakout
-
-    private var bx = 0f
-    private var by = 0f
-    private var bvx = 5f
-    private var bvy = -7f
-    private var paddleX = 0f
-
-    private val bricks =
-        ArrayList<RectF>()
-
-    private var downX = 0f
-    private var downY = 0f
-
-    init {
-
-        isFocusable = true
-
-        if (type == "snake") {
-            resetSnake()
-        }
-
-        if (type == "flappy") {
-            resetFlappy()
-        }
-
-        if (type == "breakout") {
-            post {
-                resetBreakout()
-            }
-        }
+        setContentView(root)
     }
 
-    private fun resetSnake() {
+    private fun addGameButton(
+        parent: LinearLayout,
+        title: String,
+        persian: String,
+        symbol: String,
+        index: Int,
+        action: () -> Unit
+    ) {
 
-        snake.clear()
+        val button = LinearLayout(this)
+        button.orientation = LinearLayout.HORIZONTAL
+        button.gravity = Gravity.CENTER_VERTICAL
+        button.setPadding(dp(18), 0, dp(18), 0)
 
-        snake.add(Point(8, 12))
-        snake.add(Point(7, 12))
-        snake.add(Point(6, 12))
+        val bg = GradientDrawable()
+        bg.setColor(navy)
+        bg.cornerRadius = dp(19).toFloat()
+        button.background = bg
 
-        dir = Point(1, 0)
+        button.isClickable = true
+        button.isFocusable = true
 
-        food = Point(14, 8)
-    }
+        val icon = TextView(this)
+        icon.text = symbol
+        icon.textSize = 22f
+        icon.setTextColor(Color.WHITE)
+        icon.gravity = Gravity.CENTER
 
-    private fun resetFlappy() {
-
-        birdY =
-            if (height > 0) {
-                height / 2f
-            } else {
-                500f
-            }
-
-        vel = 0f
-
-        pipeX =
-            if (width > 0) {
-                width.toFloat()
-            } else {
-                1000f
-            }
-
-        gapY =
-            if (height > 0) {
-                height / 2f
-            } else {
-                500f
-            }
-    }
-
-    private fun resetBreakout() {
-
-        bricks.clear()
-
-        if (width <= 0) return
-
-        val cols = 6
-        val cellWidth =
-            width.toFloat() / cols.toFloat()
-
-        for (r in 0..4) {
-
-            for (col in 0 until cols) {
-
-                bricks.add(
-                    RectF(
-                        col * cellWidth + 8f,
-                        r * 34f + 30f,
-                        col * cellWidth + cellWidth - 8f,
-                        r * 34f + 58f
-                    )
-                )
-            }
-        }
-
-        bx = width / 2f
-        by = height - 180f
-        paddleX = width / 2f
-    }
-
-    override fun onDraw(canvas: Canvas) {
-
-        super.onDraw(canvas)
-
-        canvas.drawColor(
-            Color.rgb(246, 247, 249)
+        button.addView(
+            icon,
+            LinearLayout.LayoutParams(
+                dp(35),
+                LinearLayout.LayoutParams.MATCH_PARENT
+            )
         )
 
-        paint.color = navy
-        paint.style = Paint.Style.FILL
-        paint.textSize = 18f
+        val textContainer = LinearLayout(this)
+        textContainer.orientation = LinearLayout.VERTICAL
+        textContainer.gravity = Gravity.CENTER
 
-        canvas.drawText(
-            "Score  $score",
-            25f,
-            35f,
-            paint
+        val mainText = TextView(this)
+        mainText.text = title
+        mainText.textSize = 18f
+        mainText.setTextColor(Color.WHITE)
+        mainText.typeface = Typeface.create(
+            Typeface.DEFAULT,
+            Typeface.BOLD
+        )
+        mainText.gravity = Gravity.CENTER
+
+        val subText = TextView(this)
+        subText.text = persian
+        subText.textSize = 11f
+        subText.setTextColor(Color.rgb(205, 215, 225))
+        subText.gravity = Gravity.CENTER
+
+        textContainer.addView(
+            mainText,
+            LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                dp(25)
+            )
         )
 
-        canvas.drawText(
-            "Best  $best",
-            width - 120f,
-            35f,
-            paint
+        textContainer.addView(
+            subText,
+            LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                dp(20)
+            )
         )
 
-        when (type) {
+        button.addView(
+            textContainer,
+            LinearLayout.LayoutParams(
+                0,
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                1f
+            )
+        )
 
-            "snake" ->
-                drawSnake(canvas)
+        val arrow = TextView(this)
+        arrow.text = "›"
+        arrow.textSize = 30f
+        arrow.setTextColor(Color.WHITE)
+        arrow.gravity = Gravity.CENTER
 
-            "flappy" ->
-                drawFlappy(canvas)
+        button.addView(
+            arrow,
+            LinearLayout.LayoutParams(
+                dp(30),
+                LinearLayout.LayoutParams.MATCH_PARENT
+            )
+        )
 
-            "breakout" ->
-                drawBreakout(canvas)
-        }
+        val params = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            dp(58)
+        )
 
-        if (!running) {
+        params.topMargin = if (index == 0) dp(5) else dp(10)
 
-            paint.color = navy
-            paint.textSize = 24f
+        parent.addView(button, params)
 
-            val message =
-                if (over) {
-                    "GAME OVER"
-                } else {
-                    "TAP TO START"
+        button.alpha = 0f
+        button.translationY = dp(20).toFloat()
+
+        button.animate()
+            .alpha(1f)
+            .translationY(0f)
+            .setDuration(450)
+            .setStartDelay((650 + index * 100).toLong())
+            .start()
+
+        button.setOnTouchListener { v, event ->
+
+            when (event.action) {
+
+                MotionEvent.ACTION_DOWN -> {
+                    v.animate()
+                        .scaleX(0.97f)
+                        .scaleY(0.97f)
+                        .setDuration(80)
+                        .start()
                 }
 
-            canvas.drawText(
-                message,
-                width / 2f - 75f,
-                height - 90f,
-                paint
-            )
+                MotionEvent.ACTION_UP -> {
+                    v.animate()
+                        .scaleX(1f)
+                        .scaleY(1f)
+                        .setDuration(100)
+                        .start()
 
-            paint.textSize = 14f
+                    v.performClick()
+                }
 
-            canvas.drawText(
-                "لمس کن / سوایپ کن",
-                width / 2f - 55f,
-                height - 55f,
-                paint
-            )
-        }
-    }
-
-    private fun drawSnake(canvas: Canvas) {
-
-        val cols = 18
-        val rows = 28
-
-        val availableHeight =
-            (height - 70).coerceAtLeast(1)
-
-        val cell =
-            min(
-                width / cols.toFloat(),
-                availableHeight / rows.toFloat()
-            )
-
-        val ox =
-            (width - cols * cell) / 2f
-
-        val oy = 55f
-
-        paint.color =
-            Color.rgb(229, 232, 236)
-
-        for (i in 1 until cols) {
-
-            canvas.drawLine(
-                ox + i * cell,
-                oy,
-                ox + i * cell,
-                oy + rows * cell,
-                paint
-            )
-        }
-
-        for (i in 1 until rows) {
-
-            canvas.drawLine(
-                ox,
-                oy + i * cell,
-                ox + cols * cell,
-                oy + i * cell,
-                paint
-            )
-        }
-
-        paint.color = navy
-
-        snake.forEach { point ->
-
-            canvas.drawRoundRect(
-                ox + point.x * cell + 2f,
-                oy + point.y * cell + 2f,
-                ox + (point.x + 1) * cell - 2f,
-                oy + (point.y + 1) * cell - 2f,
-                7f,
-                7f,
-                paint
-            )
-        }
-
-        paint.color =
-            Color.rgb(65, 92, 125)
-
-        canvas.drawCircle(
-            ox + (food.x + 0.5f) * cell,
-            oy + (food.y + 0.5f) * cell,
-            cell * 0.28f,
-            paint
-        )
-    }
-
-    private fun drawFlappy(canvas: Canvas) {
-
-        paint.color = navy
-
-        canvas.drawCircle(
-            width * 0.3f,
-            birdY,
-            22f,
-            paint
-        )
-
-        paint.color =
-            Color.rgb(65, 92, 125)
-
-        canvas.drawRect(
-            pipeX,
-            0f,
-            pipeX + 58f,
-            gapY - 85f,
-            paint
-        )
-
-        canvas.drawRect(
-            pipeX,
-            gapY + 85f,
-            pipeX + 58f,
-            height.toFloat(),
-            paint
-        )
-
-        paint.color = navy
-        paint.textSize = 13f
-
-        canvas.drawText(
-            "برای پرواز ضربه بزن",
-            width / 2f - 75f,
-            height - 50f,
-            paint
-        )
-    }
-
-    private fun drawBreakout(canvas: Canvas) {
-
-        paint.color =
-            Color.rgb(65, 92, 125)
-
-        bricks.forEach {
-            canvas.drawRoundRect(
-                it,
-                8f,
-                8f,
-                paint
-            )
-        }
-
-        paint.color = navy
-
-        canvas.drawCircle(
-            bx,
-            by,
-            10f,
-            paint
-        )
-
-        canvas.drawRoundRect(
-            paddleX - 55f,
-            height - 55f,
-            paddleX + 55f,
-            height - 35f,
-            12f,
-            12f,
-            paint
-        )
-
-        paint.textSize = 13f
-
-        canvas.drawText(
-            "پد را با انگشت جابه‌جا کن",
-            width / 2f - 70f,
-            height - 10f,
-            paint
-        )
-    }
-
-    private fun gameOver() {
-
-        running = false
-        over = true
-
-        if (score > best) {
-
-            best = score
-
-            prefs.edit()
-                .putInt("best_$type", best)
-                .apply()
-        }
-
-        invalidate()
-    }
-
-    private fun loop() {
-
-        if (!running) return
-
-        val now =
-            System.currentTimeMillis()
-
-        val interval =
-            if (type == "snake") {
-                120L
-            } else {
-                16L
+                MotionEvent.ACTION_CANCEL -> {
+                    v.animate()
+                        .scaleX(1f)
+                        .scaleY(1f)
+                        .setDuration(100)
+                        .start()
+                }
             }
 
-        if (now - last > interval) {
+            true
+        }
 
-            last = now
+        button.setOnClickListener {
+            action()
+        }
+    }
 
-            update()
+    // ---------------------------------------------------------
+    // GAME SCREEN
+    // ---------------------------------------------------------
+
+    private fun gameContainer(
+        title: String,
+        gameView: View
+    ): FrameLayout {
+
+        val frame = FrameLayout(this)
+        frame.setBackgroundColor(background)
+
+        val top = LinearLayout(this)
+        top.orientation = LinearLayout.HORIZONTAL
+        top.gravity = Gravity.CENTER_VERTICAL
+
+        val back = TextView(this)
+        back.text = "‹"
+        back.textSize = 42f
+        back.setTextColor(navy)
+        back.gravity = Gravity.CENTER
+        back.setPadding(0, 0, 0, dp(4))
+
+        back.setOnClickListener {
+            showHome()
+        }
+
+        top.addView(
+            back,
+            LinearLayout.LayoutParams(
+                dp(58),
+                dp(60)
+            )
+        )
+
+        val titleView = TextView(this)
+        titleView.text = title
+        titleView.textSize = 25f
+        titleView.setTextColor(navy)
+        titleView.typeface = Typeface.create(
+            Typeface.DEFAULT,
+            Typeface.BOLD
+        )
+        titleView.gravity = Gravity.CENTER
+
+        top.addView(
+            titleView,
+            LinearLayout.LayoutParams(
+                0,
+                dp(60),
+                1f
+            )
+        )
+
+        val empty = Space(this)
+
+        top.addView(
+            empty,
+            LinearLayout.LayoutParams(
+                dp(58),
+                dp(60)
+            )
+        )
+
+        val topParams = FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.MATCH_PARENT,
+            dp(65)
+        )
+
+        frame.addView(top, topParams)
+
+        val gameParams = FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.MATCH_PARENT,
+            FrameLayout.LayoutParams.MATCH_PARENT
+        )
+
+        gameParams.topMargin = dp(65)
+        gameParams.bottomMargin = dp(8)
+        gameParams.leftMargin = dp(8)
+        gameParams.rightMargin = dp(8)
+
+        frame.addView(gameView, gameParams)
+
+        return frame
+    }
+
+    // ---------------------------------------------------------
+    // SNAKE
+    // ---------------------------------------------------------
+
+    private fun showSnake() {
+
+        val game = SnakeView(this)
+
+        setContentView(
+            gameContainer(
+                "SNAKE",
+                game
+            )
+        )
+
+        game.start()
+
+        game.alpha = 0f
+        game.scaleX = 0.96f
+        game.scaleY = 0.96f
+
+        game.animate()
+            .alpha(1f)
+            .scaleX(1f)
+            .scaleY(1f)
+            .setDuration(350)
+            .start()
+    }
+
+    private class SnakeView(context: Context) : View(context) {
+
+        private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+
+        private val cols = 18
+        private val rows = 25
+
+        private val snake = mutableListOf<Pair<Int, Int>>()
+
+        private var food = Pair(10, 10)
+
+        private var dx = 1
+        private var dy = 0
+
+        private var nextDx = 1
+        private var nextDy = 0
+
+        private var score = 0
+        private var running = false
+        private var gameOver = false
+
+        private var lastX = 0f
+        private var lastY = 0f
+
+        private val prefs =
+            context.getSharedPreferences("records", Context.MODE_PRIVATE)
+
+        init {
+            setBackgroundColor(Color.rgb(247, 248, 250))
+            reset()
+        }
+
+        fun start() {
+            running = true
+
+            post(object : Runnable {
+                override fun run() {
+
+                    if (running && !gameOver) {
+                        update()
+                        invalidate()
+                        postDelayed(this, 145)
+                    }
+                }
+            })
+        }
+
+        private fun reset() {
+
+            snake.clear()
+
+            snake.add(Pair(8, 12))
+            snake.add(Pair(7, 12))
+            snake.add(Pair(6, 12))
+
+            dx = 1
+            dy = 0
+
+            nextDx = 1
+            nextDy = 0
+
+            score = 0
+            gameOver = false
+
+            food = randomFood()
 
             invalidate()
         }
 
-        postDelayed(
-            {
-                loop()
-            },
-            16L
-        )
-    }
+        private fun randomFood(): Pair<Int, Int> {
 
-    private fun update() {
-
-        when (type) {
-
-            "snake" -> updateSnake()
-
-            "flappy" -> updateFlappy()
-
-            "breakout" -> updateBreakout()
-        }
-    }
-
-    private fun updateSnake() {
-
-        val head = snake[0]
-
-        val next =
-            Point(
-                head.x + dir.x,
-                head.y + dir.y
-            )
-
-        if (
-            next.x < 0 ||
-            next.y < 0 ||
-            next.x >= 18 ||
-            next.y >= 28 ||
-            snake.contains(next)
-        ) {
-
-            gameOver()
-            return
-        }
-
-        snake.add(
-            0,
-            next
-        )
-
-        if (next == food) {
-
-            score++
-
-            var newFood: Point
+            var p: Pair<Int, Int>
 
             do {
-
-                newFood =
-                    Point(
-                        Random.nextInt(18),
-                        Random.nextInt(28)
-                    )
-
-            } while (snake.contains(newFood))
-
-            food = newFood
-
-        } else {
-
-            snake.removeAt(
-                snake.size - 1
-            )
-        }
-    }
-
-    private fun updateFlappy() {
-
-        vel += 0.42f
-        birdY += vel
-
-        pipeX -= 5f
-
-        if (pipeX < -70f) {
-
-            pipeX =
-                width.toFloat()
-
-            gapY =
-                100f +
-                    Random.nextFloat() *
-                    (height - 250f).coerceAtLeast(100f)
-
-            score++
-        }
-
-        val birdX =
-            width * 0.3f
-
-        val collision =
-            birdX + 22f > pipeX &&
-            birdX - 22f < pipeX + 58f &&
-            (
-                birdY < gapY - 85f ||
-                birdY > gapY + 85f
-            )
-
-        if (
-            birdY < 0f ||
-            birdY > height ||
-            collision
-        ) {
-
-            gameOver()
-        }
-    }
-
-    private fun updateBreakout() {
-
-        bx += bvx
-        by += bvy
-
-        if (
-            bx < 10f ||
-            bx > width - 10f
-        ) {
-
-            bvx = -bvx
-        }
-
-        if (by < 10f) {
-
-            bvy = -bvy
-        }
-
-        if (
-            by > height - 80f &&
-            bx >= paddleX - 70f &&
-            bx <= paddleX + 70f
-        ) {
-
-            bvy =
-                -abs(bvy)
-        }
-
-        val hit =
-            bricks.indexOfFirst {
-                it.contains(
-                    bx,
-                    by
+                p = Pair(
+                    Random.nextInt(cols),
+                    Random.nextInt(rows)
                 )
-            }
+            } while (snake.contains(p))
 
-        if (hit >= 0) {
+            return p
+        }
 
-            bricks.removeAt(hit)
+        private fun update() {
 
-            bvy = -bvy
+            dx = nextDx
+            dy = nextDy
 
-            score++
+            val head = snake.first()
 
-            if (bricks.isEmpty()) {
+            val newHead = Pair(
+                head.first + dx,
+                head.second + dy
+            )
 
-                gameOver()
+            if (
+                newHead.first < 0 ||
+                newHead.first >= cols ||
+                newHead.second < 0 ||
+                newHead.second >= rows ||
+                snake.contains(newHead)
+            ) {
+                endGame()
                 return
             }
-        }
 
-        if (by > height) {
+            snake.add(0, newHead)
 
-            gameOver()
-        }
-    }
+            if (newHead == food) {
 
-    override fun onTouchEvent(
-        event: MotionEvent
-    ): Boolean {
+                score++
 
-        when (event.actionMasked) {
+                food = randomFood()
 
-            MotionEvent.ACTION_DOWN -> {
+            } else {
 
-                downX = event.x
-                downY = event.y
-
-                if (!running) {
-
-                    if (over) {
-
-                        score = 0
-                        over = false
-
-                        when (type) {
-
-                            "snake" ->
-                                resetSnake()
-
-                            "flappy" ->
-                                resetFlappy()
-
-                            "breakout" ->
-                                resetBreakout()
-                        }
-                    }
-
-                    running = true
-
-                    last =
-                        System.currentTimeMillis()
-
-                    loop()
-
-                    if (type == "flappy") {
-                        vel = -8f
-                    }
-                }
-
-                return true
-            }
-
-            MotionEvent.ACTION_MOVE -> {
-
-                if (type == "breakout") {
-
-                    paddleX =
-                        event.x.coerceIn(
-                            55f,
-                            width - 55f
-                        )
-                }
-
-                return true
-            }
-
-            MotionEvent.ACTION_UP -> {
-
-                if (type == "snake") {
-
-                    val dx =
-                        event.x - downX
-
-                    val dy =
-                        event.y - downY
-
-                    if (
-                        abs(dx) >
-                        abs(dy)
-                    ) {
-
-                        if (dx > 0) {
-                            dir = Point(1, 0)
-                        } else {
-                            dir = Point(-1, 0)
-                        }
-
-                    } else {
-
-                        if (dy > 0) {
-                            dir = Point(0, 1)
-                        } else {
-                            dir = Point(0, -1)
-                        }
-                    }
-
-                }
-
-                return true
+                snake.removeAt(snake.lastIndex)
             }
         }
 
-        return true
-    }
-}
+        private fun endGame() {
 
-class TTTView(
-    context: Context,
-    private val prefs: android.content.SharedPreferences
-) : View(context) {
+            gameOver = true
+            running = false
 
-    private val paint =
-        Paint(Paint.ANTI_ALIAS_FLAG)
+            val old =
+                prefs.getInt("snake_best", 0)
 
-    private val board =
-        IntArray(9)
+            if (score > old) {
+                prefs.edit()
+                    .putInt("snake_best", score)
+                    .apply()
+            }
 
-    private var turn = 1
+            invalidate()
+        }
 
-    private var done = false
+        override fun onDraw(canvas: Canvas) {
 
-    private val navy =
-        Color.rgb(23, 42, 70)
+            super.onDraw(canvas)
 
-    override fun onDraw(canvas: Canvas) {
+            val w = width.toFloat()
+            val h = height.toFloat()
 
-        canvas.drawColor(
-            Color.rgb(246, 247, 249)
-        )
+            val cell =
+                min(
+                    (w - 20f) / cols,
+                    (h - 105f) / rows
+                )
 
-        paint.color = navy
-        paint.strokeWidth = 5f
+            val boardW = cell * cols
+            val boardH = cell * rows
 
-        val cell =
-            width / 3f
+            val left = (w - boardW) / 2f
+            val top = 65f
 
-        canvas.drawLine(
-            cell,
-            30f,
-            cell,
-            height - 30f,
-            paint
-        )
+            // امتیاز
+            paint.color = Color.rgb(60, 68, 77)
+            paint.textSize = 18f
+            paint.typeface = Typeface.DEFAULT_BOLD
 
-        canvas.drawLine(
-            cell * 2f,
-            30f,
-            cell * 2f,
-            height - 30f,
-            paint
-        )
+            canvas.drawText(
+                "SCORE  $score",
+                left,
+                32f,
+                paint
+            )
 
-        canvas.drawLine(
-            30f,
-            cell,
-            width - 30f,
-            cell,
-            paint
-        )
+            val best =
+                prefs.getInt("snake_best", 0)
 
-        canvas.drawLine(
-            30f,
-            cell * 2f,
-            width - 30f,
-            cell * 2f,
-            paint
-        )
+            paint.color = Color.rgb(125, 130, 138)
+            paint.textSize = 14f
+            paint.typeface = Typeface.DEFAULT
 
-        paint.textSize = 70f
-        paint.textAlign = Paint.Align.CENTER
+            canvas.drawText(
+                "BEST  $best",
+                left + boardW - 75f,
+                32f,
+                paint
+            )
 
-        for (i in 0..8) {
+            // صفحه
+            paint.color = Color.WHITE
 
-            if (board[i] != 0) {
+            canvas.drawRoundRect(
+                left - 5f,
+                top - 5f,
+                left + boardW + 5f,
+                top + boardH + 5f,
+                18f,
+                18f,
+                paint
+            )
 
-                val symbol =
-                    if (board[i] == 1) {
-                        "X"
-                    } else {
-                        "O"
-                    }
+            // خطوط خیلی ظریف
+            paint.color = Color.rgb(238, 240, 243)
+            paint.style = Paint.Style.STROKE
+            paint.strokeWidth = 1f
 
-                canvas.drawText(
-                    symbol,
-                    (i % 3 + 0.5f) * cell,
-                    (i / 3 + 0.72f) * cell,
+            for (i in 0..cols) {
+
+                val x = left + i * cell
+
+                canvas.drawLine(
+                    x,
+                    top,
+                    x,
+                    top + boardH,
                     paint
                 )
             }
+
+            for (i in 0..rows) {
+
+                val y = top + i * cell
+
+                canvas.drawLine(
+                    left,
+                    y,
+                    left + boardW,
+                    y,
+                    paint
+                )
+            }
+
+            paint.style = Paint.Style.FILL
+
+            // غذا
+            paint.color = Color.rgb(40, 180, 130)
+
+            canvas.drawCircle(
+                left + food.first * cell + cell / 2f,
+                top + food.second * cell + cell / 2f,
+                cell * .34f,
+                paint
+            )
+
+            // مار
+            snake.forEachIndexed { index, p ->
+
+                paint.color =
+                    if (index == 0)
+                        Color.rgb(25, 49, 79)
+                    else
+                        Color.rgb(50, 79, 110)
+
+                val x = left + p.first * cell
+                val y = top + p.second * cell
+
+                canvas.drawRoundRect(
+                    x + 2f,
+                    y + 2f,
+                    x + cell - 2f,
+                    y + cell - 2f,
+                    cell * .22f,
+                    cell * .22f,
+                    paint
+                )
+            }
+
+            if (gameOver) {
+
+                paint.color = Color.argb(
+                    225,
+                    247,
+                    248,
+                    250
+                )
+
+                canvas.drawRoundRect(
+                    left,
+                    top,
+                    left + boardW,
+                    top + boardH,
+                    18f,
+                    18f,
+                    paint
+                )
+
+                paint.color = Color.rgb(25, 49, 79)
+                paint.textAlign = Paint.Align.CENTER
+                paint.textSize = 27f
+                paint.typeface = Typeface.DEFAULT_BOLD
+
+                canvas.drawText(
+                    "GAME OVER",
+                    w / 2f,
+                    top + boardH / 2f - 15f,
+                    paint
+                )
+
+                paint.textSize = 17f
+                paint.typeface = Typeface.DEFAULT
+
+                canvas.drawText(
+                    "Tap to play again",
+                    w / 2f,
+                    top + boardH / 2f + 22f,
+                    paint
+                )
+
+                paint.textAlign = Paint.Align.LEFT
+            }
         }
 
-        paint.textSize = 18f
+        override fun onTouchEvent(event: MotionEvent): Boolean {
 
-        canvas.drawText(
-            if (done) {
-                "دوباره لمس کن"
-            } else {
-                "نوبت: ${
-                    if (turn == 1) "X"
-                    else "O"
-                }"
-            },
-            width / 2f,
-            height - 8f,
-            paint
+            when (event.action) {
+
+                MotionEvent.ACTION_DOWN -> {
+
+                    lastX = event.x
+                    lastY = event.y
+
+                    if (gameOver) {
+                        reset()
+                        start()
+                    }
+
+                    return true
+                }
+
+                MotionEvent.ACTION_UP -> {
+
+                    val diffX = event.x - lastX
+                    val diffY = event.y - lastY
+
+                    if (abs(diffX) > abs(diffY)) {
+
+                        if (diffX > 30 && dx != -1) {
+                            nextDx = 1
+                            nextDy = 0
+                        }
+
+                        if (diffX < -30 && dx != 1) {
+                            nextDx = -1
+                            nextDy = 0
+                        }
+
+                    } else {
+
+                        if (diffY > 30 && dy != -1) {
+                            nextDx = 0
+                            nextDy = 1
+                        }
+
+                        if (diffY < -30 && dy != 1) {
+                            nextDx = 0
+                            nextDy = -1
+                        }
+                    }
+
+                    return true
+                }
+            }
+
+            return true
+        }
+    }
+
+    // ---------------------------------------------------------
+    // BREAKOUT
+    // ---------------------------------------------------------
+
+    private fun showBreakout() {
+
+        val game = BreakoutView(this)
+
+        setContentView(
+            gameContainer(
+                "BREAKOUT",
+                game
+            )
         )
+
+        game.start()
     }
 
-    override fun onTouchEvent(
-        event: MotionEvent
-    ): Boolean {
+    private class BreakoutView(context: Context) : View(context) {
 
-        if (
-            event.action !=
-            MotionEvent.ACTION_DOWN
-        ) {
-            return true
+        private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+
+        private var paddleX = 0f
+
+        private var ballX = 0f
+        private var ballY = 0f
+
+        private var vx = 6f
+        private var vy = -8f
+
+        private var score = 0
+        private var running = false
+        private var over = false
+
+        private val bricks = ArrayList<RectF>()
+
+        private val prefs =
+            context.getSharedPreferences("records", Context.MODE_PRIVATE)
+
+        init {
+            setBackgroundColor(Color.rgb(247, 248, 250))
         }
 
-        if (done) {
+        fun start() {
 
-            java.util.Arrays.fill(
-                board,
-                0
+            post {
+
+                reset()
+
+                running = true
+
+                post(object : Runnable {
+                    override fun run() {
+
+                        if (running && !over) {
+                            update()
+                            invalidate()
+                            postDelayed(this, 16)
+                        }
+                    }
+                })
+            }
+        }
+
+        private fun reset() {
+
+            score = 0
+            over = false
+
+            paddleX = width / 2f
+
+            ballX = width / 2f
+            ballY = height * .70f
+
+            vx = 6f
+            vy = -8f
+
+            bricks.clear()
+
+            val gap = 8f
+            val bw = (width - 40f - gap * 4) / 5f
+
+            for (r in 0 until 5) {
+
+                for (c in 0 until 5) {
+
+                    val x =
+                        20f + c * (bw + gap)
+
+                    val y =
+                        75f + r * 35f
+
+                    bricks.add(
+                        RectF(
+                            x,
+                            y,
+                            x + bw,
+                            y + 27f
+                        )
+                    )
+                }
+            }
+        }
+
+        private fun update() {
+
+            ballX += vx
+            ballY += vy
+
+            if (ballX < 8f) {
+                ballX = 8f
+                vx = abs(vx)
+            }
+
+            if (ballX > width - 8f) {
+                ballX = width - 8f
+                vx = -abs(vx)
+            }
+
+            if (ballY < 60f) {
+                ballY = 60f
+                vy = abs(vy)
+            }
+
+            val paddleY = height - 75f
+
+            if (
+                ballY + 10f >= paddleY &&
+                ballY + 10f <= paddleY + 25f &&
+                ballX >= paddleX - 55f &&
+                ballX <= paddleX + 55f &&
+                vy > 0
+            ) {
+                vy = -abs(vy)
+            }
+
+            val iterator = bricks.iterator()
+
+            while (iterator.hasNext()) {
+
+                val brick = iterator.next()
+
+                if (
+                    ballX >= brick.left &&
+                    ballX <= brick.right &&
+                    ballY >= brick.top &&
+                    ballY <= brick.bottom
+                ) {
+
+                    iterator.remove()
+
+                    vy *= -1f
+                    score++
+
+                    break
+                }
+            }
+
+            if (bricks.isEmpty()) {
+                over = true
+                running = false
+            }
+
+            if (ballY > height + 30f) {
+
+                over = true
+                running = false
+
+                val old =
+                    prefs.getInt("breakout_best", 0)
+
+                if (score > old) {
+                    prefs.edit()
+                        .putInt("breakout_best", score)
+                        .apply()
+                }
+            }
+        }
+
+        override fun onDraw(canvas: Canvas) {
+
+            super.onDraw(canvas)
+
+            paint.color = Color.rgb(55, 63, 72)
+            paint.textSize = 18f
+            paint.typeface = Typeface.DEFAULT_BOLD
+
+            canvas.drawText(
+                "SCORE  $score",
+                20f,
+                35f,
+                paint
             )
 
-            turn = 1
-            done = false
+            // bricks
+            bricks.forEachIndexed { i, rect ->
 
-            invalidate()
+                paint.color =
+                    if (i % 2 == 0)
+                        Color.rgb(25, 49, 79)
+                    else
+                        Color.rgb(47, 76, 108)
 
-            return true
-        }
+                canvas.drawRoundRect(
+                    rect,
+                    7f,
+                    7f,
+                    paint
+                )
+            }
 
-        val cell =
-            width / 3f
+            // paddle
+            paint.color = Color.rgb(25, 49, 79)
 
-        val col =
-            (event.x / cell)
-                .toInt()
-                .coerceIn(0, 2)
-
-        val row =
-            (event.y / cell)
-                .toInt()
-                .coerceIn(0, 2)
-
-        val index =
-            row * 3 + col
-
-        if (board[index] != 0) {
-            return true
-        }
-
-        board[index] = turn
-
-        if (
-            win(turn) ||
-            board.all { it != 0 }
-        ) {
-
-            done = true
-
-        } else {
-
-            turn = 3 - turn
-        }
-
-        invalidate()
-
-        return true
-    }
-
-    private fun win(player: Int): Boolean {
-
-        val lines =
-            arrayOf(
-                intArrayOf(0, 1, 2),
-                intArrayOf(3, 4, 5),
-                intArrayOf(6, 7, 8),
-                intArrayOf(0, 3, 6),
-                intArrayOf(1, 4, 7),
-                intArrayOf(2, 5, 8),
-                intArrayOf(0, 4, 8),
-                intArrayOf(2, 4, 6)
+            canvas.drawRoundRect(
+                paddleX - 55f,
+                height - 75f,
+                paddleX + 55f,
+                height - 55f,
+                10f,
+                10f,
+                paint
             )
 
-        return lines.any {
-            board[it[0]] == player &&
-            board[it[1]] == player &&
-            board[it[2]] == player
+            // ball
+            paint.color = Color.rgb(40, 180, 130)
+
+            canvas.drawCircle(
+                ballX,
+                ballY,
+                10f,
+                paint
+            )
+
+            if (over) {
+
+                paint.color = Color.argb(
+                    225,
+                    247,
+                    248,
+                    250
+                )
+
+                canvas.drawRect(
+                    0f,
+                    0f,
+                    width.toFloat(),
+                    height.toFloat(),
+                    paint
+                )
+
+                paint.color = Color.rgb(25, 49, 79)
+                paint.textAlign = Paint.Align.CENTER
+                paint.textSize = 28f
+                paint.typeface = Typeface.DEFAULT_BOLD
+
+                canvas.drawText(
+                    if (bricks.isEmpty()) "YOU WIN" else "GAME OVER",
+                    width / 2f,
+                    height / 2f,
+                    paint
+                )
+
+                paint.textSize = 16f
+                paint.typeface = Typeface.DEFAULT
+
+                canvas.drawText(
+                    "Tap to restart",
+                    width / 2f,
+                    height / 2f + 35f,
+                    paint
+                )
+
+                paint.textAlign = Paint.Align.LEFT
+            }
+        }
+
+        override fun onTouchEvent(event: MotionEvent): Boolean {
+
+            when (event.action) {
+
+                MotionEvent.ACTION_DOWN -> {
+
+                    if (over) {
+                        reset()
+                        start()
+                        return true
+                    }
+
+                    paddleX = event.x
+                    invalidate()
+                    return true
+                }
+
+                MotionEvent.ACTION_MOVE -> {
+
+                    paddleX = event.x.coerceIn(
+                        60f,
+                        width - 60f
+                    )
+
+                    invalidate()
+                    return true
+                }
+            }
+
+            return true
         }
     }
-}
+
+    // ---------------------------------------------------------
+    // FLAPPY
+    // ---------------------------------------------------------
+
+    private fun showFlappy() {
+
+        val game = FlappyView(this)
+
+        setContentView(
+            gameContainer(
+                "FLAPPY",
+                game
+            )
+        )
+
+        game.start()
+    }
+
+    private class FlappyView(context: Context) : View(context) {
+
+        private val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+
+        private var birdX = 0f
+        private var birdY = 0f
+
+        private var velocity = 0f
+
+        private var pipeX = 0f
+        private var gapY = 0f
+
+        private var score = 0
+
+        private var running = false
+        private var over = false
+
+        private var lastPipe = 0f
+
+        private val prefs =
+            context.getSharedPreferences("records", Context.MODE_PRIVATE)
+
+        fun start() {
+
+            post {
+
+                reset()
+
+                running = true
+
+                post(object : Runnable {
+                    override fun run() {
+
+                        if (running && !over) {
+
+                            update()
+                            invalidate()
+
+                            postDelayed(this, 16)
+                        }
+                    }
+                })
+            }
+        }
+
+        private fun reset() {
+
+            birdX = width * .28f
+            birdY = height * .45f
+
+            velocity = 0f
+
+            pipeX = width + 100f
+            gapY = height * .45f
+
+            score = 0
+
+            over = false
+            lastPipe = pipeX
+        }
+
+        private fun flap() {
+            velocity = -9.5f
+        }
+
+        private fun update() {
+
+            velocity += .42f
+            birdY += velocity
+
+            pipeX -= 4.8f
+
+            if (pipeX < -70f) {
+
+                pipeX = width + 50f
+
+                gapY = Random.nextInt(
+                    max(130, height / 4),
+                    max(
+                        131,
+                        height * 3 / 4
+                    )
+                ).toFloat()
+
+                score++
+            }
+
+            val birdRadius = 17f
+
+            if (
+                birdY - birdRadius < 60f ||
+                birdY + birdRadius > height
+            ) {
+                endGame()
+                return
+            }
+
+            val gap = 145f
+            val pipeWidth = 60f
+
+            val hitX =
+                birdX + birdRadius > pipeX &&
+                birdX - birdRadius < pipeX + pipeWidth
+
+            val hitY =
+                birdY - birdRadius < gapY - gap / 2f ||
+                birdY + birdRadius > gapY + gap / 2f
+
+            if (hitX && hitY) {
+                endGame()
+            }
+        }
+
+        private fun endGame() {
+
+            running = false
+            over = true
+
+            val old =
+                prefs.getInt("flappy_best", 0)
+
+            if (score > old) {
+
+                prefs.edit()
+                    .putInt("flappy_best", score)
+                    .apply()
+            }
+        }
+
+        override fun onDraw(canvas: Canvas) {
+
+            super.onDraw(canvas)
+
+            // سقف
+            paint.color = Color.rgb(225, 229, 234)
+
+            canvas.drawRect(
+                0f,
+                55f,
+                width.toFloat(),
+                60f,
+                paint
+            )
+
+            // امتیاز
+            paint.color = Color.rgb(55, 63, 72)
+            paint.textAlign = Paint.Align.CENTER
+            paint.textSize = 24f
+            paint.typeface = Typeface.DEFAULT_BOLD
+
+            canvas.drawText(
+                "$score",
+                width / 2f,
+                38f,
+                paint
+            )
+
+            // pipe
+            val gap = 145f
+
+            paint.color = Color.rgb(25, 49, 79)
+
+            canvas.drawRoundRect(
+                pipeX,
+                60f,
+                pipeX + 60f,
+                gapY - gap / 2f,
+                10f,
+                10f,
+                paint
+            )
+
+            canvas.drawRoundRect(
+                pipeX,
+                gapY + gap / 2f,
+                pipeX + 60f,
+                height.toFloat(),
+                10f,
+                10f,
+                paint
+            )
+
+            // bird
+            paint.color = Color.rgb(40, 180, 130)
+
+            canvas.drawCircle(
+                birdX,
+                birdY,
+                17f,
+                paint
+            )
+
+            paint.color = Color.WHITE
+
+            canvas.drawCircle(
+                birdX + 6f,
+                birdY - 5f,
+                4f,
+                paint
+            )
+
+            paint.color = Color.rgb(30, 35, 40)
+
+            canvas.drawCircle(
+                birdX + 7f,
+                birdY - 5f,
+                2f,
+                paint
+            )
+
+            if (over) {
+
+                paint.color = Color.argb(
+                    225,
+                    247,
+                    248,
+                    250
+                )
+
+                canvas.drawRect(
+                    0f,
+                    60f,
+                    width.toFloat(),
+                    height.toFloat(),
+                    paint
+                )
+
+                paint.color = Color.rgb(25, 49, 79)
+                paint.textSize = 28f
+                paint.typeface = Typeface.DEFAULT_BOLD
+
+                canvas.drawText(
+                    "GAME OVER",
+                    width / 2f,
+                    height / 2f,
+                    paint
+                )
+
+                paint.textSize = 16f
+               
